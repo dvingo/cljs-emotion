@@ -1,7 +1,7 @@
 (ns dv.cljs-emotion
   (:require
     #?@(:cljs [["react" :as react]
-               ["@emotion/styled" :refer [default] :rename {default styled}]
+               ["@emotion/styled" :default styled]
                ["@emotion/core" :as styled-core :refer [Global]]])
     [clojure.spec.alpha :as s]
     #?(:cljs [goog.object :as g])

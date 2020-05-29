@@ -20,7 +20,7 @@
   </developers>
   <scm>
     <url>https://github.com/dvingo/dv.cljs-emotion</url>
-    <connection>scm:git:git://github.com/dv/dv.test-lib.git</connection>
+    <connection>scm:git:git://github.com/dvingo/dv.cljs-emotion.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/dvingo/dv.cljs-emotion.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
