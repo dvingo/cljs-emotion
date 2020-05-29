@@ -9,7 +9,7 @@
     [clojure.walk :as walk]
     [taoensso.timbre :as log]
     [com.fulcrologic.guardrails.core :refer [>defn =>]])
-  #?(:cljs (:require-macros [dv.cljs-emotion.client.styled :refer [defstyled]])))
+  #?(:cljs (:require-macros [dv.cljs-emotion.styled :refer [defstyled]])))
 
 #?(:cljs
    (defn keyframes [anim-map]
