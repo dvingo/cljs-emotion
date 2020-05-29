@@ -1,4 +1,4 @@
-# ClojureScript wrapper for emotion 
+# ClojureScript wrapper for emotion
 
 ## Usage
 
@@ -15,10 +15,3 @@ Install it locally:
 Deploy it to Clojars -- needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` environment variables:
 
     $ clojure -A:deploy
-
-## License
-
-Copyright © 2020 Default
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.

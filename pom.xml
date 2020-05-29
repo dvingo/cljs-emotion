@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>dv</groupId>
-  <artifactId>dv.cljs-emotion</artifactId>
+  <artifactId>cljs-emotion</artifactId>
   <version>version-one</version>
-  <name>dv.cljs-emotion</name>
+  <name>cljs-emotion</name>
   <description>ClojureScript wrapper of emotion css-in-js library</description>
   <url>https://github.com/dvingo/dv.cljs-emotion</url>
   <licenses>
@@ -20,8 +20,8 @@
   </developers>
   <scm>
     <url>https://github.com/dvingo/dv.cljs-emotion</url>
-    <connection>scm:git:git://github.com/dvingo/dv.cljs-emotion.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/dvingo/dv.cljs-emotion.git</developerConnection>
+    <connection>scm:git:git://github.com/dvingo/cljs-emotion.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/dvingo/cljs-emotion.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
   <dependencies>
