@@ -1,6 +1,4 @@
-# dv.test-lib
-
-FIXME: my new library.
+# ClojureScript wrapper for emotion 
 
 ## Usage
 
