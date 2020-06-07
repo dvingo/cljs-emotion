@@ -5,6 +5,7 @@
   "repository": "git@github.com:dvingo/cljs-emotion.git",
   "author": "Daniel Vingo <dan@danvingo.com>",
   "license": "MIT",
+  "scripts": {"start": "shadow-cljs watch devcards"},
   "dependencies": {
     "create-react-class": "15.6.3",
     "highlight.js": "^10.0.3",

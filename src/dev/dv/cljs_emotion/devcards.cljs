@@ -118,32 +118,29 @@
 
 (defstyled box2 box
   {:border-radius "4px"
+   :user-select   "none"
    :background    (p/lighten 0.2 "palevioletred")
-   ":hover"       {:background (darken 0.2 "palevioletred")
-                   :cursor     "pointer"}
+   :cursor        "pointer"
+   ":hover"       {:background (darken 0.2 "palevioletred")}
    ":active"      {:background (darken 0.4 "palevioletred")
-                   :box-shadow "4px 4px lightgrey"
-                   :cursor     "pointer"}})
+                   :box-shadow "4px 4px lightgrey"}})
 
 (defcard flex-card
   "
 ```clojure
-(defstyled flex :div\n  {:display         \"flex\"\n   :flex-wrap       \"wrap\"\n   :justify-content \"space-evenly\"})\n\n(defstyled box :div\n  {:width           \"20%\"\n   :padding         \"1rem 0\"\n   :display         \"flex\"\n   :margin          \"1rem\"\n   :justify-content \"center\"\n   :background      \"palEvIoletrEd\"})\n\n(defstyled box2 box\n  {:border-radius \"4px\"\n   :background    (p/lighten 0.2 \"palevioletred\")
-   \":hover\"       {:background (darken 0.2 \"palevioletred\")
-     :cursor     \"pointer\"}\n   \":active\"      {:background (darken 0.4 \"palevioletred\")\n                   :box-shadow \"4px 4px lightgrey\"\n                   :cursor     \"pointer\"}})\n
-(flex\n    (box \"hi\") (box \"hi\") (box \"hi\")  (box2 \"hi\")  (box2 \"hi\")  (box \"hi\") (box \"hi\") (box2 \"hi\") (box \"hi\"))
-```
+(defstyled flex :div\n  {:display         \"flex\"\n   :flex-wrap       \"wrap\"\n   :justify-content \"space-evenly\"})
+
+(defstyled box :div\n  {:width           \"20%\"\n   :padding         \"1rem 0\"\n   :display         \"flex\"\n   :margin          \"1rem\"\n   :justify-content \"center\"\n   :background      \"palEvIoletrEd\"})\n
+
+(defstyled box2 box\n  {:border-radius \"4px\"\n   :user-select   \"none\"\n   :background    (p/lighten 0.2 \"palevioletred\")\n   :cursor        \"pointer\"\n   \":hover\"       {:background (darken 0.2 \"palevioletred\")}\n   \":active\"      {:background (darken 0.4 \"palevioletred\")\n                   :box-shadow \"4px 4px lightgrey\"}})
+
+(flex (box \"box\") (box \"box\") (box \"box\") (box2 \"box2\") (box2 \"box2\") (box \"box\") (box \"box\") (box2 \"box2\") (box \"box\")))\n```
 "
-  (flex
-    (box "hi")
-    (box "hi")
-    (box "hi")
-    (box2 "hi")
-    (box2 "hi")
-    (box "hi")
-    (box "hi")
-    (box2 "hi")
-    (box "hi")))
+  (flex (box "box")
+    (box "box") (box "box") (box2 "box2") (box2 "box2") (box "box")
+    (box "box") (box2 "box2") (box "box")))
+
+
 
 (defstyled with-anim2 :div
   (fn [{:keys [amt] :or {amt 20}}]
@@ -171,13 +168,54 @@
        [:p "hue: " (p/adjustHue (:amt @a) "yellow")]
        [:button {:on-click #(swap! a update :amt (partial + 10))} "inc"]
        [:button {:on-click #(swap! a update :amt (partial - 10))} "dec"]
-       (with-anim2 {:amt (:amt @a)
+       (with-anim2 {:amt     (:amt @a)
                     :onClick #(js/console.log "ON CLICK")} "Some text here")]))
   {:amt 20})
 
 
+;; change global
+
+(defcard update-global-styles
+  "
+  This example changes the body background color.
+  ```clojure
+   ```"
+  (fn [a _]
+    (let [{:keys [bg]} @a]
+      (println "bg: " bg)
+      (html
+        [:div
+         [:label "Input a color for the background color:"]
+         [:input {:value bg :on-change #(swap! a assoc :bg (-> % .-target .-value))}]
+         (global-style {:body {:background bg}})])))
+  {:bg "#cce"})
 
 
+
+(def start-bg "rgb(239, 237, 237)")
+
+(defcard update-card-header-styles
+  "
+  This example changes the body background color.
+  ```clojure
+   ```"
+  (fn [a _]
+    (let [{:keys [bg]} @a
+          cls :.com-rigsomelight-devcards-panel-heading]
+      (html
+        [:div
+         [:label "Input a color for the background color:"]
+         [:input {:value bg :on-change #(swap! a assoc :bg (-> % .-target .-value))}]
+         [:button {:on-click #(swap! a assoc :bg start-bg)} "reset"]
+         [:button
+          {:on-click
+           #(swap! a assoc :bg (p/lighten 0.08 bg))} "lighten"]
+
+         [:button
+          {:on-click
+           #(swap! a assoc :bg (p/darken 0.08 bg))} "darken"]
+         (global-style {cls {:background bg}})])))
+  {:bg start-bg})
 
 
 
@@ -185,3 +223,4 @@
   []
   (js/console.log "HIII")
   (dc/start-devcard-ui!))
+

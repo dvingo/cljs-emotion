@@ -4,6 +4,7 @@
  :aliases
         {:dev     {:extra-paths ["src/dev"]
                    :extra-deps  {devcards                  {:mvn/version "0.2.7"}
+                                 com.fulcrologic/fulcro    {:mvn/version "3.2.9"}
                                  sablono                   {:mvn/version "0.8.6"}
                                  binaryage/devtools        {:mvn/version "0.9.10"}
                                  org.clojure/clojurescript {:mvn/version "1.10.773"}
