@@ -12,5 +12,5 @@
 *.shadow-cljs
 node_modules
 yarn-error.log
-resources/public/js
-!resources/public/js/devcards/devcards.js
+/resources/public/js/devcards/*
+!/resources/public/js/devcards/devcards.js
