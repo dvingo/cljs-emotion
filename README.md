@@ -15,3 +15,9 @@ Install it locally:
 Deploy it to Clojars -- needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` environment variables:
 
     $ clojure -A:deploy
+
+# development 
+
+```bash
+yarn shadow-cljs watch devcards
+```

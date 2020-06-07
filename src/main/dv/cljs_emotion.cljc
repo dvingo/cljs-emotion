@@ -108,7 +108,10 @@
        ([]
         (react/createElement el (clj->js (set-class-name {} class-name))))
        ([props]
-        ;(log/info "in props only  " class-name " props " props)
+        ;(js/console.log "in props only  " class-name " props " props)
+        ;(js/console.log "in props only  seq? " (seq? props) )
+        ;(js/console.log "in props only  type? " (type props) )
+
         (try
           (cond
             (or (react/isValidElement props) (string? props))
@@ -128,9 +131,8 @@
               ;; todo js support for set-class-name so you don't need to shuttle datatypes
               (react/createElement el (set-class-name props class-name)))
 
-            (or (array? props) (seq? props))
+            (or (array? props) (coll? props))
             (do
-              ;(log/info class-name " GOT A SEQ: " props)
               (react/createElement el #js{} (to-array props)))
 
             :else
