@@ -8,3 +8,8 @@
 /.nrepl-history
 /.nrepl-port
 *.iml
+*.idea
+*.shadow-cljs
+node_modules
+yarn-error.log
+resources/public/js

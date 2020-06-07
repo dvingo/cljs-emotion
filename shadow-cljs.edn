@@ -1,0 +1,21 @@
+{:deps
+ {:aliases [:dev]}
+
+ :nrepl
+ {:port 3434}
+
+ :builds
+ {:devcards {:target     :browser
+             :output-dir "resources/public/js/devcards"
+             :asset-path "/js/devcards"
+
+             :modules    {:devcards {:entries [dv.cljs-emotion.devcards]
+                                     :init-fn dv.cljs-emotion.devcards/main}}
+
+             :devtools   {:http-port        4001
+                          :http-root        "resources/public"
+                          :http-handler     shadow.http.push-state/handle
+                          :push-state/index "devcards.html"
+                          ;:preloads        [dev.devcards]
+                          :after-load       dv.cljs-emotion.devcards/main}
+             :dev        {:compiler-options {:devcards true}}}}}

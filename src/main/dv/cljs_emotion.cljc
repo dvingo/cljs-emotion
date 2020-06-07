@@ -3,12 +3,11 @@
     #?@(:cljs [["react" :as react]
                ["@emotion/styled" :default styled]
                ["@emotion/core" :as styled-core :refer [Global]]])
-    [clojure.spec.alpha :as s]
     #?(:cljs [goog.object :as g])
     [clojure.string :as str]
     [clojure.walk :as walk]
-    [taoensso.timbre :as log]
-    [com.fulcrologic.guardrails.core :refer [>defn =>]])
+    [com.fulcrologic.guardrails.core :refer [>defn =>]]
+    [clojure.string :as str])
   #?(:cljs (:require-macros [dv.cljs-emotion :refer [defstyled]])))
 
 #?(:cljs
@@ -72,23 +71,21 @@
 
           :else x#))))
 
-#?(:cljs (goog-define ADD_CLASSNAMES true))
-
-;; update: just do fqn only and only allow enable/disable toggle.
-;; i don't think there's a point in unqualified classnames
-;; you should be able to pass a className to the component anyway - you can wrap a react component that
-;; sets the classname plus combines with the passed in one.
+#?(:cljs (goog-define ADD_CLASSNAMES goog.DEBUG))
 
 #?(:cljs
    (defn set-class-name [props class-name]
      (cond (and ADD_CLASSNAMES (object? props))
-           (let [clsname (g/get props "className")]
-             (doto props (g/set "className" (str class-name " " clsname))))
+       (doto props
+         (g/set "className"
+           (->> [class-name (g/get props "className")]
+             (str/join " ")
+             (str/trim))))
 
-           (and ADD_CLASSNAMES class-name)
-           (update props :className #(if (nil? %) class-name (str class-name " " %)))
+       (and ADD_CLASSNAMES class-name)
+       (update props :className #(if (nil? %) class-name (str class-name " " %)))
 
-           :else props)))
+       :else props)))
 
 #?(:cljs
    (defn set-js-classname [clsname props]
@@ -120,7 +117,7 @@
             (do
               ;(log/info "got an object")
               ;; todo js support for set-class-name so you don't need to shuttle datatypes
-              (react/createElement el (clj->js (js->clj (set-class-name props class-name)))))
+              (react/createElement el (set-class-name props class-name)))
 
             (or (array? props) (seq? props))
             (do
@@ -129,7 +126,7 @@
 
             :else
             (do (log/info "ELSE CLAUSE")
-             (react/createElement el #js{})))
+                (react/createElement el #js{})))
 
           (catch js/Object e (log/info "CAUGHT ERROR" e))))
 
@@ -205,7 +202,7 @@
                     ~children* (cljs.core/clj->js ~children*)
                     ~component-type ~(get-type `styled* el)
                     ~clss (.apply ~component-type ~component-type ~children*)]
-                (goog.object/set ~clss "displayName" ~(str component-name))
+                (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
                 (def ~component-name
                   (with-meta (react-factory ~clss ~class-name)
                     {::styled ~clss})))))))
