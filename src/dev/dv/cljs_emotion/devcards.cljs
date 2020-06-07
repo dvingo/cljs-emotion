@@ -1,31 +1,75 @@
 (ns dv.cljs-emotion.devcards
   (:require
     [devcards.core :as dc :refer (defcard)]
+    [cljs.reader :as edn]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
     ;[reagent.core :as r]
-    [dv.cljs-emotion :refer [defstyled keyframes global-style]]
-    ))
+    [dv.cljs-emotion :refer [defstyled keyframes global-style]]))
 (enable-console-print!)
 
+(def global-data (atom {:on? false}))
+
+(def btn-styles
+  {"button"
+   {:background-color "#f2f2f2"
+    :background-image "linear-gradient(to bottom, #f2f2f2, #f2f2f2)"
+    :border           "1px solid #bfbfbf"
+    :text-shadow      "0 1px 0 rgba(255, 255, 255, 0.5)"
+    :border-radius    3
+    :cursor           "pointer"
+    :color            "#8c8c8c"
+    :font-family      "sans-serif"
+    :line-height      "1rem"
+    :font-weight      700
+    :margin           "16px 0 0 16px"
+    :padding          "9px 16px 9px"
+    :transition       "all 20ms ease-out"
+    :vertical-align   "top"
+    :box-shadow       (str "inset 0 1px 0 white, inset 0 -1px 0 #d9d9d9,"
+                        " inset    0 0 0 1px #f2f2f2, 0 2px 4px rgba(0, 0, 0, 0.2)")
+    ":active"         {:box-shadow "inset 0 2px 3px rgba(0, 0, 0, 0.2)"}
+    ":hover"          {:background   "#f2f2f2"
+                       :border-color "#8c8c8c"
+                       :box-shadow   "inset 0 1px 0 white, inset 0 -1px 0 #d9d9d9, inset 0 0 0 1px #f2f2f2"}}})
+
+(def button-styles
+  {"button"
+   {:padding       "1rem 2rem"
+    :border-radius "4px"
+    :transition    "all .5s"
+    ":hover"       {:box-shadow " 0px 10px 10px rgba(0,0,0,0.2)"
+                    :transform  "translateY(-3px)"
+                    "::after"   {:transform "scaleX(1.4) scaleY(1.6)"
+                                 :opacity   0
+                                 }}
+
+
+    "::after"      {:content         "''"
+                    :text-decoration "none"
+                    :text-transform  "uppercase"
+                    :position        "absolute"
+                    :width           "100 %"
+                    :height          "100 %"
+                    :top             0
+                    :left            0
+                    :border-radius   100
+                    :display         "inline-block"
+                    :z-index         -1
+                    :transition      "all .5s"
+                    }
+
+    }})
+
 (defcard
-  example-counter
-  (fn [data-atom owner]
-    (sab/html
-      [:h3
-       "Example Counter"
-       (:count @data-atom)])) {})
-
-
-(defcard another
-  (fn [data-atom owner]
-    (sab/html
-      [:div
-       [:h3 "Example Counter: " (:count @data-atom)]
-       [:button
-        {:onClick (fn [] (swap! data-atom update-in [:count] inc))}
-        "inc"]]))
-  {:count 100})
+  (fn [data _]
+    (let [on? (:on? @data)]
+      (html
+        [:div
+         [:h2 "Click here to style the buttons on this page"]
+         [:button {:on-click #(swap! global-data update :on? not)} "Do it."]
+         (when on? (global-style btn-styles))])))
+  global-data)
 
 (defcard
   "
@@ -194,14 +238,16 @@
 
 (def start-bg "rgb(239, 237, 237)")
 
-(defcard update-card-header-styles
+(defcard update-card-bg-styles
   "
   This example changes the body background color.
   ```clojure
    ```"
   (fn [a _]
     (let [{:keys [bg]} @a
-          cls :.com-rigsomelight-devcards-panel-heading]
+          ;cls :.com-rigsomelight-devcards-panel-heading
+          cls :.my-card
+          ]
       (html
         [:div
          [:label "Input a color for the background color:"]
@@ -215,7 +261,9 @@
           {:on-click
            #(swap! a assoc :bg (p/darken 0.08 bg))} "darken"]
          (global-style {cls {:background bg}})])))
-  {:bg start-bg})
+  {:bg start-bg}
+  {:classname "my-card"})
+
 
 
 
