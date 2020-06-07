@@ -123,12 +123,17 @@
                    :cursor     "pointer"}
    ":active"      {:background (darken 0.4 "palevioletred")
                    :box-shadow "4px 4px lightgrey"
-                   :cursor     "pointer"}
-   })
+                   :cursor     "pointer"}})
 
 (defcard flex-card
-  "```clojure
-  ```"
+  "
+```clojure
+(defstyled flex :div\n  {:display         \"flex\"\n   :flex-wrap       \"wrap\"\n   :justify-content \"space-evenly\"})\n\n(defstyled box :div\n  {:width           \"20%\"\n   :padding         \"1rem 0\"\n   :display         \"flex\"\n   :margin          \"1rem\"\n   :justify-content \"center\"\n   :background      \"palEvIoletrEd\"})\n\n(defstyled box2 box\n  {:border-radius \"4px\"\n   :background    (p/lighten 0.2 \"palevioletred\")
+   \":hover\"       {:background (darken 0.2 \"palevioletred\")
+     :cursor     \"pointer\"}\n   \":active\"      {:background (darken 0.4 \"palevioletred\")\n                   :box-shadow \"4px 4px lightgrey\"\n                   :cursor     \"pointer\"}})\n
+(flex\n    (box \"hi\") (box \"hi\") (box \"hi\")  (box2 \"hi\")  (box2 \"hi\")  (box \"hi\") (box \"hi\") (box2 \"hi\") (box \"hi\"))
+```
+"
   (flex
     (box "hi")
     (box "hi")
@@ -138,13 +143,7 @@
     (box "hi")
     (box "hi")
     (box2 "hi")
-    (box "hi")
-    ))
-
-
-
-
-
+    (box "hi")))
 
 (defstyled with-anim2 :div
   (fn [{:keys [amt] :or {amt 20}}]
@@ -156,7 +155,15 @@
 
 ;; keyframes
 (defcard keyframes2
-  "```clojure
+  "
+```clojure
+(defstyled with-anim2 :div
+  (fn [{:keys [amt] :or {amt 20}}]
+    {:animation
+      (str (keyframes
+        {:from {:background (p/adjustHue amt \"yellow\")}
+         :to   {:background \"yellow\"}})
+          \" 2s ease-in-out infinite\")}))
   ```"
   (fn [a o]
     (html
