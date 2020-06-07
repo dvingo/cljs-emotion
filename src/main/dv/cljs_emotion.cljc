@@ -18,13 +18,16 @@
    (>defn kebab->camel
      [prop]
      [string? => string?]
-     (if (str/includes? prop "-")
-       (let [words (->> (re-seq #"[a-zA-Z]+" prop)
-                     (mapv str/capitalize))]
-         (-> words
-           (update 0 str/lower-case)
-           str/join))
-       prop)))
+     (if (str/starts-with? prop ".")
+       prop
+
+       (if (str/includes? prop "-")
+         (let [words (->> (re-seq #"[a-zA-Z]+" prop)
+                       (mapv str/capitalize))]
+           (-> words
+             (update 0 str/lower-case)
+             str/join))
+         prop))))
 
 #?(:cljs
    (defn camelize-keys
@@ -71,21 +74,27 @@
 
           :else x#))))
 
-#?(:cljs (goog-define ADD_CLASSNAMES goog.DEBUG))
+#?(:cljs (goog-define ADD_CLASSNAMES "INITIAL"))
+
+#?(:cljs
+   (defn add-class-names? []
+     (if (boolean? ADD_CLASSNAMES)
+       ADD_CLASSNAMES
+       goog.DEBUG)))
 
 #?(:cljs
    (defn set-class-name [props class-name]
-     (cond (and ADD_CLASSNAMES (object? props))
-       (doto props
-         (g/set "className"
-           (->> [class-name (g/get props "className")]
-             (str/join " ")
-             (str/trim))))
+     (cond (and (add-class-names?) (object? props))
+           (doto props
+             (g/set "className"
+               (->> [class-name (g/get props "className")]
+                 (str/join " ")
+                 (str/trim))))
 
-       (and ADD_CLASSNAMES class-name)
-       (update props :className #(if (nil? %) class-name (str class-name " " %)))
+           (and (add-class-names?) class-name)
+           (update props :className #(if (nil? %) class-name (str class-name " " %)))
 
-       :else props)))
+           :else props)))
 
 #?(:cljs
    (defn set-js-classname [clsname props]
@@ -125,10 +134,10 @@
               (react/createElement el #js{} (to-array props)))
 
             :else
-            (do (log/info "ELSE CLAUSE")
-                (react/createElement el #js{})))
+            (react/createElement el #js{}))
 
-          (catch js/Object e (log/info "CAUGHT ERROR" e))))
+          (catch js/Object e
+            (js/console.error "Error invoking an emotion styled component: " (.getMessage e)))))
 
        ([props & children]
         ;(log/info class-name " in props & children ")
@@ -269,17 +278,17 @@
 ;https://github.com/emotion-js/emotion/blob/188dc0e785cfc9b10b3f9a6ead62b56ddd38e039/packages/core/src/global.js#L16
 
 #?(:cljs
-   (defn global [props]
+   (defn global-style [props]
      (global* {:styles (camelize-keys props)})))
 
 ;; can use like so:
 (comment
-  (cu/global {:body {:background "#cce" "@media (min-width:700px)" {:background "white"}}})
-  (cu/global
+  (global-style {:body {:background "#cce" "@media (min-width:700px)" {:background "white"}}})
+  (global-style
     [(clj->js {:body {:font-family "serif"}}) {:body {:border "2px solid yellOW"}} {:body {:background-color "#ecccee"}}])
 
-  ;; to adapt based on props:
+  ;; to adapt based on props, wrap in a fn:
   (defn my-globals [props]
-    (cu/global
+    (global-style
       {:body {:background-color "red"}}))
   )
