@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dv</groupId>
   <artifactId>cljs-emotion</artifactId>
-  <version>version-one</version>
+  <version>version-two</version>
   <name>cljs-emotion</name>
   <description>ClojureScript wrapper of emotion css-in-js library</description>
   <url>https://github.com/dvingo/dv.cljs-emotion</url>
@@ -30,18 +30,24 @@
       <artifactId>clojure</artifactId>
       <version>1.10.1</version>
     </dependency>
+    <dependency>
+      <groupId>com.fulcrologic</groupId>
+      <artifactId>guardrails</artifactId>
+      <version>0.0.12</version>
+    </dependency>
+    <dependency>
+      <groupId>seancorfield</groupId>
+      <artifactId>depstar</artifactId>
+      <version>1.0.94</version>
+    </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>src</sourceDirectory>
+    <sourceDirectory>src/main</sourceDirectory>
   </build>
   <repositories>
     <repository>
       <id>clojars</id>
       <url>https://repo.clojars.org/</url>
-    </repository>
-    <repository>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
     </repository>
   </repositories>
   <distributionManagement>
