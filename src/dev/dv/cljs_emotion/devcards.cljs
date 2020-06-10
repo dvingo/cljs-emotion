@@ -1,11 +1,12 @@
 (ns dv.cljs-emotion.devcards
   (:require
     [devcards.core :as dc :refer (defcard)]
+    [dv.cljs-emotion.target-styled]
     [cljs.reader :as edn]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
     ;[reagent.core :as r]
-    [dv.cljs-emotion :refer [defstyled keyframes global-style]]))
+    [dv.cljs-emotion :as em :refer [defstyled keyframes global-style]]))
 (enable-console-print!)
 
 (def global-data (atom {:on? false}))
@@ -57,9 +58,7 @@
                     :display         "inline-block"
                     :z-index         -1
                     :transition      "all .5s"
-                    }
-
-    }})
+                    }}})
 
 (defcard
   (fn [data _]
@@ -221,7 +220,7 @@
 
 (defcard update-global-styles
   "
-  This example changes the body background color.
+  This example changes the body background of this page's body color.
   ```clojure
    ```"
   (fn [a _]
@@ -264,11 +263,5 @@
   {:bg start-bg}
   {:classname "my-card"})
 
-
-
-
-(defn ^:export main
-  []
-  (js/console.log "HIII")
-  (dc/start-devcard-ui!))
+(defn ^:export main [] (dc/start-devcard-ui!))
 

@@ -59,14 +59,18 @@
    ;; todo rename bc it also camelizes
    (defn wrap-call-style-fn []
      `(fn [x#]
+        ;(js/console.log "Wrapping value: " x#)
         (cond
 
           (cljs.core/fn? x#)
-          (cljs.core/fn [arg#]
-            ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
-            (cljs.core/clj->js
-              ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
-              (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true)))))
+          (do (js/console.log "got function")
+              (js/console.log x#)
+
+              (cljs.core/fn [arg#]
+                ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+                (cljs.core/clj->js
+                  ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
+                  (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))))
 
           ;; maps come up in value position for nested selectors
           (map? x#)
@@ -196,27 +200,28 @@
            (throw (Exception. (str "Unknown option for class-name style in metadata passed to component: " component-sym)))))
        (get-cls-name namespace-name default-classname-style component-sym))))
 
-#?(:clj (defmacro defstyled
-          ([component-name el & children]
-           (let [component-type (gensym "component-type")
-                 clss           (gensym "clss")
-                 class-name     (gensym "className")
-                 children*      (gensym "children")]
-             `(let [~class-name ~(get-cls-name-from-meta (-> &env :ns :name) component-name)
-                    ~children*
-                    (walk/postwalk
-                      ;; todo here you can do props validation also
-                      ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
-                      ~(wrap-call-style-fn)
-                      ~(vec children))
-                    ;; pass js structures to the lib
-                    ~children* (cljs.core/clj->js ~children*)
-                    ~component-type ~(get-type `styled* el)
-                    ~clss (.apply ~component-type ~component-type ~children*)]
-                (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
-                (def ~component-name
-                  (with-meta (react-factory ~clss ~class-name)
-                    {::styled ~clss})))))))
+#?(:clj
+   (defmacro defstyled
+     ([component-name el & children]
+      (let [component-type (gensym "component-type")
+            clss           (gensym "clss")
+            class-name     (gensym "className")
+            children*      (gensym "children")]
+        `(let [~class-name ~(get-cls-name-from-meta (-> &env :ns :name) component-name)
+               ~children*
+               (walk/postwalk
+                 ;; todo here you can do props validation also
+                 ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
+                 ~(wrap-call-style-fn)
+                 ~(vec children))
+               ;; pass js structures to the lib
+               ~children* (cljs.core/clj->js ~children*)
+               ~component-type ~(get-type `styled* el)
+               ~clss (.apply ~component-type ~component-type ~children*)]
+           (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
+           (def ~component-name
+             (with-meta (react-factory ~clss ~class-name)
+               {::styled ~clss})))))))
 
 #?(:clj
    (comment
