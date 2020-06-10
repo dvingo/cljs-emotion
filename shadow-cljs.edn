@@ -14,8 +14,6 @@
 
              :devtools   {:http-port        4001
                           :http-root        "resources/public"
-                          :http-handler     shadow.http.push-state/handle
                           :push-state/index "devcards.html"
-                          ;:preloads        [dev.devcards]
                           :after-load       dv.cljs-emotion.devcards/main}
              :dev        {:compiler-options {:devcards true}}}}}
