@@ -160,6 +160,10 @@
           (catch js/Object e
             (js/console.error "Error invoking an emotion styled component: " (.getMessage e)))))
 
+       ;; TODO  should probably add support for no props and just a collection of children
+       ;; (cond (map? props) -> branch
+       ;;       (object? props)
+       ;;       :else -> prepend to children
        ([props & children]
         (let [props (clj->js (set-class-name props class-name))]
           (if (seq children)
