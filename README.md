@@ -1,8 +1,10 @@
 # ClojureScript wrapper for emotion
 
-## Usage
+Documentation and examples are here:
 
-FIXME: write usage documentation!
+https://dvingo.github.io/cljs-emotion
+
+Notes for deploy:
 
 Build a deployable jar of this library:
 
@@ -19,5 +21,5 @@ Deploy it to Clojars -- needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` environm
 # development 
 
 ```bash
-yarn shadow-cljs watch devcards
+make dev
 ```

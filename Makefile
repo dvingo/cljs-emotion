@@ -20,8 +20,8 @@ dev:
 
 # To deploy to gh-pages:
 
-# On master: make gh-pages
 # gco gh-pages
+# make gh-pages
 # gdc
 gh-pages:
 > yarn shadow-cljs release devcards
