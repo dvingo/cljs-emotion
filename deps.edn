@@ -5,11 +5,12 @@
  :aliases
         {:dev     {:extra-paths ["src/dev"]
                    :extra-deps  {devcards                  {:mvn/version "0.2.7"}
+                                 reagent                   {:mvn/version "0.10.0" :exclusions [cljsjs/react]}
                                  com.fulcrologic/fulcro    {:mvn/version "3.2.9"}
                                  sablono                   {:mvn/version "0.8.6"}
                                  binaryage/devtools        {:mvn/version "0.9.10"}
                                  org.clojure/clojurescript {:mvn/version "1.10.773"}
-                                 thheller/shadow-cljs      {:mvn/version "2.9.8"}}}
+                                 thheller/shadow-cljs      {:mvn/version "2.10.12"}}}
          :test    {:extra-paths ["test"]
                    :extra-deps  {org.clojure/test.check {:mvn/version "1.0.0"}}}
          :runner

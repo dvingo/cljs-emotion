@@ -5,15 +5,13 @@
   "author": "Daniel Vingo <dan@danvingo.com>",
   "license": "MIT",
   "scripts": {"start": "shadow-cljs watch devcards"},
-  "dependencies": {
+  "devDependencies": {
     "create-react-class": "15.6.3",
     "highlight.js": "^10.0.3",
     "marked": "^1.1.0",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
-  },
-  "devDependencies": {
-    "shadow-cljs": "^2.9.8",
+    "react-dom": "^16.13.1",
+    "shadow-cljs": "^2.10.12",
     "@emotion/core": "^10.0.28",
     "@emotion/styled": "^10.0.27",
     "polished": "^3.6.4"
