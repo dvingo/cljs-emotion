@@ -17,3 +17,11 @@ jar:
 dev:
 > yarn
 > yarn shadow-cljs watch devcards
+
+# To deploy to gh-pages:
+
+# On master: make gh-pages
+# gco gh-pages
+# gdc
+gh-pages:
+> yarn shadow-cljs release devcards
