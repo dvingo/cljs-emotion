@@ -20,8 +20,11 @@ dev:
 
 # To deploy to gh-pages:
 
+# Make commits on master
 # gco gh-pages
+# git rebase master
 # make gh-pages
-# gdc
+# gc -m
+# gpoh -f
 gh-pages:
 > yarn shadow-cljs release devcards
