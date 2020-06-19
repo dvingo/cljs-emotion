@@ -13,3 +13,7 @@ endif
 jar:
 > clojure -Spom
 > clojure -A:jar
+
+dev:
+> yarn
+> yarn shadow-cljs watch devcards

@@ -9,6 +9,21 @@
     [dv.cljs-emotion :as em :refer [defstyled keyframes global-style]]))
 (enable-console-print!)
 
+(defcard
+  "
+  Hi there. This page uses devcards to demonstrate usage of the dv.cljs-emotion library.
+  This library is a small wrapper around the emotion css-in-js JavaScript library that
+  makes it easy to use all of CSS within a react application.
+
+  The main API of this library is: `[defstyled keyframes global-style]`
+
+  defstyled is a wrapper around `@emotion/styled`
+  Styled is multi-arity and supports passing functions that return maps of styles, a vector of styles that
+  will be merged top down (first to last) and a map, you can also pass JavaScript objects and arrays.
+
+  This library converts between cljs and js structures, but the multi-arity capability is built into emotion already.
+  ")
+
 (def global-data (atom {:on? false}))
 
 (def btn-styles
@@ -42,10 +57,7 @@
     ":hover"       {:box-shadow " 0px 10px 10px rgba(0,0,0,0.2)"
                     :transform  "translateY(-3px)"
                     "::after"   {:transform "scaleX(1.4) scaleY(1.6)"
-                                 :opacity   0
-                                 }}
-
-
+                                 :opacity   0}}
     "::after"      {:content         "''"
                     :text-decoration "none"
                     :text-transform  "uppercase"
@@ -57,64 +69,71 @@
                     :border-radius   100
                     :display         "inline-block"
                     :z-index         -1
-                    :transition      "all .5s"
-                    }}})
+                    :transition      "all .5s"}}})
 
 (defcard
+  "For a quick demonstration we will change some global styles on this page.
+
+  In this example we add some styles to `<button>` elements on this page using
+  global styles.
+
+  If global styles are rendered and the on subsequent render they are not, emotion will remove those global styles
+  from the page so you can dynamically include global styles.
+```clojure
+(html\n  [:div\n  [:h2 \"Click the button to style all the <button>s on this page\"]\n  [:button {:on-click #(swap! global-data update :on? not)} \"Do it.\"]\n (when on? (global-style btn-styles))])
+```
+  "
   (fn [data _]
     (let [on? (:on? @data)]
       (html
         [:div
-         [:h2 "Click here to style the buttons on this page"]
+         [:h2 "Click the button to style all the <button>s on this page"]
          [:button {:on-click #(swap! global-data update :on? not)} "Do it."]
          (when on? (global-style btn-styles))])))
   global-data)
 
-(defcard
-  "
-  Hello this should be markdown
-  ```clojure
-  (fn [data-atom owner]\n    (sab/html\n      [:div\n       [:h3 \"Example Counter: \" (:count @data-atom)]\n       [:button\n        {:onClick (fn [] (swap! data-atom update-in [:count] inc))}\n        \"inc\"]]))
-
-  ```
-  ")
-
 (defstyled sample1 :div
   {:background-color "rebeCCApurple"})
 
-(defcard basic
-  "```clojure
-  (defstyled sample1 :div
-    {:background-color \"RebeccaPurple\"})
-  ```"
-  (html (sample1 "Some text here")))
+(defcard
+"The main api is defstyled which will return react element factory - a function that accepts props and children.
 
-(defcard basic
-  "```clojure
+```clojure
+(defstyled sample1 :div
+  {:background-color \"RebeccaPurple\"})
+
+(sample1 \"Some text here\")
+```"
+  (sample1 "Some text here"))
+
+(defcard
+  "You find it useful to know that the `className` property is passed through to the rendered element.
+
+```clojure
   (defstyled sample1 :div
     {:background-color \"RebeccaPurple\"})
   (sample1 {:className \"TEST\"} \"Some text here\")
-  ```"
+```"
   (sample1 {:className "TEST"} "Some text here"))
 
 (def mw-700 "@media (min-width:700px)")
 (defcard global-styles
-  "```clojure
-   (def mw-700 \"@media (min-width:700px)\")
-   [:div
-     [:.my-thing \"Some content\"]
-      (global-style
-        {:body {:background \"#cce\"
-          \"@media (min-width:700px)\" {:background \"#ccc\"}}
-         :.my-thing {:background \"navy\" :color \"#cce\"
-                     mw-700 {:background \"black\"}}})]
+  "Nested styles are supported - as these are part of the emotion API. Here we are applying different styles
+  for screen widths greater than 699 pixels using a breakpoint.
 
-   ```"
-  (html [:div
-         [:.my-thing "Some content"]
-         (global-style
-           {:body      {:background "#cce" "@media (min-width:700px)" {:background "#ccc"}}
-            :.my-thing {:background "navy" :color "#cce" mw-700 {:background "black"}}})]))
+  We also target a global class \"my-thing\" - using the :.classname notation is handled by this library and passes
+  \".my-thing\" to emotion.
+
+  Resize the width of the page to see the effect.
+
+```clojure
+(def mw-700 \"@media (min-width:700px)\")
+[:div\n [:.my-thing \"Some content\"]\n  (global-style\n    {:.my-thing {:background \"navy\" :color \"#cce\" mw-700 {:background \"black\"}}})])
+```"
+(html [:div
+    [:.my-thing "Some content"]
+     (global-style
+      {:.my-thing {:background "navy" :color "#cce" mw-700 {:background "black"}}})]))
 
 (def animation
   (keyframes {:from {:background "transparent"}
@@ -124,16 +143,13 @@
   {:animation (str animation " " time "s ease-in-out infinite")}
   )
 
-;(defstyled with-anim :div
-;  (fn [{:keys [time]}]
-;    {:animation (str animation " " time "s ease-in-out infinite")}))
-
 (defstyled with-anim :div
   test-body)
 
 ;; keyframes
 (defcard keyframes
-  "```clojure
+  "Keyframe animations are supported - this is built into emotion.
+```clojure
 (def animation\n  (keyframes {:from {:background \"transparent\"}\n              :to {:background \"grey\"} } ))\n\n(defstyled with-anim :div\n  (fn [{:keys [time]}]\n    {:animation (str animation \" \" time \"s ease-in-out infinite\")}))\n
   (with-anim {:time (:time @a)} \"Some text here\")]
   ```"
@@ -169,7 +185,10 @@
                    :box-shadow "4px 4px lightgrey"}})
 
 (defcard flex-card
-  "
+  "Here is a somewhat larger example, showing the extension feature of emotion to override styles.
+
+  This example using the polished library as well.
+
 ```clojure
 (defstyled flex :div\n  {:display         \"flex\"\n   :flex-wrap       \"wrap\"\n   :justify-content \"space-evenly\"})
 
@@ -184,7 +203,6 @@
     (box "box") (box2 "box2") (box "box")))
 
 
-
 (defstyled with-anim2 :div
   (fn [{:keys [amt] :or {amt 20}}]
     {:animation
@@ -195,7 +213,10 @@
 
 ;; keyframes
 (defcard keyframes2
-  "
+"Animation can be defined dynamically as well - in the render.
+
+This example also shows how you can pass any props to the underlying component - in this case onClick.
+
 ```clojure
 (defstyled with-anim2 :div
   (fn [{:keys [amt] :or {amt 20}}]
@@ -204,7 +225,9 @@
         {:from {:background (p/adjustHue amt \"yellow\")}
          :to   {:background \"yellow\"}})
           \" 2s ease-in-out infinite\")}))
-  ```"
+
+(html\n  [:div\n    [:p \"hue: \" (p/adjustHue (:amt @a) \"yellow\")]\n    [:button {:on-click #(swap! a update :amt (partial + 10))} \"inc\"]\n    [:button {:on-click #(swap! a update :amt (partial - 10))} \"dec\"]\n    (with-anim2 {:amt     (:amt @a)\n                 :onClick #(js/console.log \"ON CLICK\")} \"Some text here\")])
+```"
   (fn [a o]
     (html
       [:div
@@ -222,10 +245,10 @@
   "
   This example changes the body background of this page's body color.
   ```clojure
+  [:div\n         [:label \"Input a color for the background color:\"]\n         [:input {:value bg :on-change #(swap! a assoc :bg (-> % .-target .-value))}]\n         (global-style {:body {:background bg}})]
    ```"
   (fn [a _]
     (let [{:keys [bg]} @a]
-      (println "bg: " bg)
       (html
         [:div
          [:label "Input a color for the background color:"]
@@ -234,22 +257,20 @@
   {:bg "#cce"})
 
 
-
-(def start-bg "rgb(239, 237, 237)")
+(def start-bg "#eeaabb")
 
 (defcard update-card-bg-styles
   "
-  This example changes the body background color.
+  This example changes the background color of this card.
   ```clojure
+  (let [{:keys [bg]} @a\n          cls :.my-card]\n      (html\n        [:div\n         [:label \"Input a color for the background:\"]\n         [:input {:value bg :on-change #(swap! a assoc :bg (-> % .-target .-value))}]\n         [:button {:on-click #(swap! a assoc :bg start-bg)} \"reset\"]\n         [:button\n          {:on-click\n           #(swap! a assoc :bg (p/lighten 0.08 bg))} \"lighten\"]\n\n         [:button\n          {:on-click\n           #(swap! a assoc :bg (p/darken 0.08 bg))} \"darken\"]\n         (global-style {cls {:background bg}})]))
    ```"
   (fn [a _]
     (let [{:keys [bg]} @a
-          ;cls :.com-rigsomelight-devcards-panel-heading
-          cls :.my-card
-          ]
+          cls :.my-card]
       (html
         [:div
-         [:label "Input a color for the background color:"]
+         [:label "Input a color for the background:"]
          [:input {:value bg :on-change #(swap! a assoc :bg (-> % .-target .-value))}]
          [:button {:on-click #(swap! a assoc :bg start-bg)} "reset"]
          [:button
