@@ -1,12 +1,16 @@
 # ClojureScript wrapper for emotion
 
+[![Clojars Project](https://img.shields.io/clojars/v/dv/cljs-emotion.svg)](https://clojars.org/dv/cljs-emotion)
+
 https://emotion.sh/docs/introduction
 
 To use this library
 
 Include it in your deps.edn
 
+```clojure
 dv/cljs-emotion {:mvn/version "2020-06-21"}
+```
 
 And install emotion:
 
