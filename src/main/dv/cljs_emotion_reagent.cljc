@@ -70,8 +70,8 @@
         (cond
 
           (cljs.core/fn? x#)
-          (do (js/console.log "got function")
-              (js/console.log x#)
+          (do
+            ; (js/console.log "got function") (js/console.log x#)
 
               (cljs.core/fn [arg#]
                 ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
@@ -108,12 +108,6 @@
            :else props)))
 
 #?(:cljs
-   (defn set-js-classname [clsname props]
-     (let [curr (g/get props "className")]
-       (doto props
-         (g/set "className" (if curr (str clsname " " curr) clsname))))))
-
-#?(:cljs
    (defn react-factory [el class-name]
      (fn
        ([]
@@ -123,33 +117,24 @@
         (try
           (cond
             (or (react/isValidElement props) (string? props))
-            (do
-              (react/createElement el (set-js-classname class-name #js{}) props))
+            (react/createElement el (set-class-name #js{} class-name) props)
 
             (map? props)
-            (do
-              (let [props (clj->js (set-class-name props class-name))]
-                (react/createElement el props)))
+            (let [props (clj->js (set-class-name props class-name))]
+              (react/createElement el props))
 
             (object? props)
-            (do
-              ;(log/info "got an object")
-              ;; todo js support for set-class-name so you don't need to shuttle datatypes
-              (react/createElement el (set-class-name props class-name)))
+            (react/createElement el (set-class-name props class-name))
 
             (relement? props)
-            (do
-              (println "HAve a relement for props")
-              (react/createElement el (set-js-classname class-name #js{}) (r/as-element props)))
+            (react/createElement el (set-class-name #js{} class-name) (r/as-element props))
 
             (vector? props)
-            (do
-              (println "HAve a vector for props")
-              (mapv (fn [el]
-                      (if (relement? el)
-                        (r/as-element el)
-                        el))
-                props))
+            (mapv (fn [el]
+                    (if (relement? el)
+                      (r/as-element el)
+                      el))
+              props)
 
             (array? props)
             (react/createElement el #js{} (to-array props))

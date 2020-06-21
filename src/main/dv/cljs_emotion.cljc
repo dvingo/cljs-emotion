@@ -63,8 +63,8 @@
         (cond
 
           (cljs.core/fn? x#)
-          (do (js/console.log "got function")
-              (js/console.log x#)
+          (do
+            ; (js/console.log "got function") (js/console.log x#)
 
               (cljs.core/fn [arg#]
                 ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
@@ -101,43 +101,25 @@
            :else props)))
 
 #?(:cljs
-   (defn set-js-classname [clsname props]
-     (let [curr (g/get props "className")]
-       (doto props
-         (g/set "className" (if curr (str clsname " " curr) clsname))))))
-
-#?(:cljs
    (defn react-factory [el class-name]
      (fn
        ([]
         (react/createElement el (clj->js (set-class-name {} class-name))))
        ([props]
-        ;(js/console.log "in props only  " class-name " props " props)
-        ;(js/console.log "in props only  seq? " (seq? props) )
-        ;(js/console.log "in props only  type? " (type props) )
-
         (try
           (cond
             (or (react/isValidElement props) (string? props))
-            (do
-              ;(log/info class-name " GOT A react element: " props)
-              (react/createElement el (set-js-classname class-name #js{}) props))
+            (react/createElement el (set-class-name #js{} class-name) props)
 
             (map? props)
-            (do
-              ;(log/info "got a map")
-              (let [props (clj->js (set-class-name props class-name))]
-                (react/createElement el props)))
+            (let [props (clj->js (set-class-name props class-name))]
+              (react/createElement el props))
 
             (object? props)
-            (do
-              ;(log/info "got an object")
-              ;; todo js support for set-class-name so you don't need to shuttle datatypes
-              (react/createElement el (set-class-name props class-name)))
+            (react/createElement el (set-class-name props class-name))
 
             (or (array? props) (coll? props))
-            (do
-              (react/createElement el #js{} (to-array props)))
+            (react/createElement el #js{} (to-array props))
 
             :else
             (react/createElement el #js{}))
@@ -146,7 +128,6 @@
             (js/console.error "Error invoking an emotion styled component: " (.getMessage e)))))
 
        ([props & children]
-        ;(log/info class-name " in props & children ")
         (let [props (clj->js (set-class-name props class-name))]
           (if (seq children)
             (apply react/createElement el props (to-array children))

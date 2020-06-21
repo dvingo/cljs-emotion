@@ -8,7 +8,10 @@
  {:devcards {:target     :browser
              :output-dir "resources/public/js/devcards"
              :asset-path "/js/devcards"
-             :compiler-options {:devcards true}
+
+             :compiler-options {:devcards true
+             :closure-defines {dv.cljs-emotion/ADD_CLASSNAMES true
+                               dv.cljs-emotion-reagent/ADD_CLASSNAMES true}}
 
              :modules    {:devcards {:entries [dv.cljs-emotion.devcards]
                                      :init-fn dv.cljs-emotion.devcards/main}}
