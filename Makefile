@@ -27,4 +27,5 @@ dev:
 # gc -m
 # gpoh -f
 gh-pages:
+> yarn
 > yarn shadow-cljs release devcards
