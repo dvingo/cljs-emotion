@@ -6,8 +6,7 @@
     [cljs.reader :as edn]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
-    ;[reagent.core :as r]
-    [dv.cljs-emotion :as em :refer [defstyled keyframes global-style]]))
+    [dv.cljs-emotion :refer [defstyled keyframes global-style theme-provider]]))
 (enable-console-print!)
 
 (defcard
@@ -16,7 +15,10 @@
   This library is a small wrapper around the emotion css-in-js JavaScript library that
   makes it easy to use all of CSS within a react application.
 
-  The main API of this library is: `[defstyled keyframes global-style]`
+  The source of these cards can be found here:
+  https://github.com/dvingo/cljs-emotion/tree/master/src/dev/dv/cljs_emotion
+
+  The main API of this library is: `[defstyled keyframes global-style theme-provider]`
 
   defstyled is a wrapper around `@emotion/styled`
   Styled is multi-arity and supports passing functions that return maps of styles, a vector of styles that
@@ -24,6 +26,37 @@
 
   This library converts between cljs and js structures, but the multi-arity capability is built into emotion already.
   ")
+
+(defcard
+  "# Use it
+
+Require the library:
+```clojure
+(require [dv.cljs-emotion :refer [defstyled keyframes global-style theme-provider]])
+```
+
+Or for reagent support:
+```clojure
+(require [dv.cljs-emotion-reagent :refer [defstyled keyframes global-style theme-provider]])
+```
+
+You can pass any number of children to defstyled:
+
+```clojure
+(defstyled sample1 :div
+  {:background-color \"RebeccaPurple\"})
+```
+
+```clojure
+(defstyled sample1 :div
+ {:background-color \"RebeccaPurple\"}
+ #js{:color \"yellow\"}
+ (fn [props] {:border-radius 4}))
+```
+
+This library delegates to emotion's styled API, while adding a transform layer for cljs->js data structures.
+  "
+  )
 
 (def global-data (atom {:on? false}))
 
@@ -75,10 +108,9 @@
 (defcard
   "For a quick demonstration we will change some global styles on this page.
 
-  In this example we add some styles to `<button>` elements on this page using
-  global styles.
+  In this example we add some styles to `<button>` elements on this page.
 
-  If global styles are rendered and the on subsequent render they are not, emotion will remove those global styles
+  If global styles are rendered and then on subsequent render they are not, emotion will remove those global styles
   from the page so you can dynamically include global styles.
 ```clojure
 (html\n  [:div\n  [:h2 \"Click the button to style all the <button>s on this page\"]\n  [:button {:on-click #(swap! global-data update :on? not)} \"Do it.\"]\n (when on? (global-style btn-styles))])
@@ -108,7 +140,20 @@
   (sample1 "Some text here"))
 
 (defcard
-  "You find it useful to know that the `className` property is passed through to the rendered element.
+  "You may find it useful to know that the `className` property is passed through to the rendered element.
+  Inspect the output in the browser devtools to confirm that it works.
+
+  Additionally you will note that the fully qualified symbol name is also added as a classname - this is soley used
+  during development time to see your components easily in the browser devtools. By default these classnames are removed
+  when `goog.DEBUG` is set to `false`. You can keep them during release builds by setting the closure constant:
+
+`dv.cljs-emotion/ADD_CLASSNAMES` to `true`
+
+or if using reagent:
+
+`dv.cljs-emotion-reagent/ADD_CLASSNAMES`
+
+I've set this var to true so these classname will show up in the release build of these devcards.
 
 ```clojure
   (defstyled sample1 :div
@@ -163,6 +208,101 @@
        (with-anim {:time (:time @a)} "Some text here")]))
   {:time 1})
 
+(defstyled with-anim2 :div
+  (fn [{:keys [amt] :or {amt 20}}]
+    {:animation
+     (str
+       (keyframes {:from {:background (p/adjustHue amt "yellow")}
+                   :to   {:background "yellow"}})
+       " 2s ease-in-out infinite")}))
+
+;; keyframes
+(defcard keyframes2
+  "Animation can be defined dynamically as well - in the render.
+
+  This example also shows how you can pass any props to the underlying component - in this case onClick.
+
+  ```clojure
+  (defstyled with-anim2 :div
+    (fn [{:keys [amt] :or {amt 20}}]
+      {:animation
+        (str (keyframes
+          {:from {:background (p/adjustHue amt \"yellow\")}
+           :to   {:background \"yellow\"}})
+            \" 2s ease-in-out infinite\")}))
+
+  (html\n  [:div\n    [:p \"hue: \" (p/adjustHue (:amt @a) \"yellow\")]\n    [:button {:on-click #(swap! a update :amt (partial + 10))} \"inc\"]\n    [:button {:on-click #(swap! a update :amt (partial - 10))} \"dec\"]\n    (with-anim2 {:amt     (:amt @a)\n                 :onClick #(js/console.log \"ON CLICK\")} \"Some text here\")])
+  ```"
+  (fn [a o]
+    (html
+      [:div
+       [:p "hue: " (p/adjustHue (:amt @a) "yellow")]
+       [:button {:on-click #(swap! a update :amt (partial + 10))} "inc"]
+       [:button {:on-click #(swap! a update :amt (partial - 10))} "dec"]
+       (with-anim2 {:amt     (:amt @a)
+                    :onClick #(js/console.log "ON CLICK")} "Some text here")]))
+  {:amt 20})
+
+(defstyled multi :div
+  {:background "blue"}
+  {:color "yellow"}
+  #js{"borderRadius" 4}
+  [{"border" "1px solid grey"}]
+  (fn [_] {":hover" {:background "white"}}))
+
+(defcard
+  "Multiple children are handled just like emotion:
+```clojure
+(defstyled multi :div\n  {:background \"blue\"}\n  {:color \"yellow\"}\n  #js{\"borderRadius\" 4}
+  [{\"border\" \"1px solid grey\"}]
+  (fn [_] {\":hover\" {:background \"white\"}}))
+
+(multi \"HELLO\")
+```
+"
+  (multi "HELLO"))
+
+(defstyled multi2 :div
+  [{:background "blue"}
+  {:color "yellow"}
+  #js{"borderRadius" 4}
+  [{"border" "1px solid grey"}]
+  (fn [_] {":hover" {:background "white"}})])
+
+(defcard
+  "Anywhere an array is passed emotion will merge those styles, so you can also
+  pass multiple styles as a vector/array:
+
+```clojure
+(defstyled multi2 :div\n  [{:background \"blue\"}\n  {:color \"yellow\"}\n  #js{\"borderRadius\" 4}
+  [{\"border\" \"1px solid grey\"}]
+  (fn [_] {\":hover\" {:background \"white\"}})])
+
+(multi2 \"HELLO\")
+```
+"
+  (multi2 "HELLO"))
+
+(defstyled a-fn :button
+  (fn [{:keys [my-padding]}]
+    {:padding my-padding}))
+
+(defcard
+  "Any props you pass to the component at render time are converted to cljs data
+  structures via `js->clj` and then passed to any functions in defstyled. The output of your
+  function is then passed to `clj->js` and on to emotion.
+```clojure
+(defstyled a-fn :button
+  (fn [{:keys [my-padding]}]
+    {:padding my-padding}))
+
+  (a-fn
+    {:my-padding 20 :onClick #(js/console.log \"clicked\")\n     :another-key 5} \"This is a button\")
+```
+  "
+  (a-fn
+    {:my-padding 20 :onClick #(js/console.log "clicked") :another-key 5} "This is a button"))
+
 (defstyled flex :div
   {:display         "flex"
    :flex-wrap       "wrap"
@@ -202,42 +342,6 @@
   (flex (box "box")
     (box "box") (box "box") (box2 "box2") (box2 "box2") (box "box")
     (box "box") (box2 "box2") (box "box")))
-
-
-(defstyled with-anim2 :div
-  (fn [{:keys [amt] :or {amt 20}}]
-    {:animation
-     (str
-       (keyframes {:from {:background (p/adjustHue amt "yellow")}
-                   :to   {:background "yellow"}})
-       " 2s ease-in-out infinite")}))
-
-;; keyframes
-(defcard keyframes2
-"Animation can be defined dynamically as well - in the render.
-
-This example also shows how you can pass any props to the underlying component - in this case onClick.
-
-```clojure
-(defstyled with-anim2 :div
-  (fn [{:keys [amt] :or {amt 20}}]
-    {:animation
-      (str (keyframes
-        {:from {:background (p/adjustHue amt \"yellow\")}
-         :to   {:background \"yellow\"}})
-          \" 2s ease-in-out infinite\")}))
-
-(html\n  [:div\n    [:p \"hue: \" (p/adjustHue (:amt @a) \"yellow\")]\n    [:button {:on-click #(swap! a update :amt (partial + 10))} \"inc\"]\n    [:button {:on-click #(swap! a update :amt (partial - 10))} \"dec\"]\n    (with-anim2 {:amt     (:amt @a)\n                 :onClick #(js/console.log \"ON CLICK\")} \"Some text here\")])
-```"
-  (fn [a o]
-    (html
-      [:div
-       [:p "hue: " (p/adjustHue (:amt @a) "yellow")]
-       [:button {:on-click #(swap! a update :amt (partial + 10))} "inc"]
-       [:button {:on-click #(swap! a update :amt (partial - 10))} "dec"]
-       (with-anim2 {:amt     (:amt @a)
-                    :onClick #(js/console.log "ON CLICK")} "Some text here")]))
-  {:amt 20})
 
 
 ;; change global
@@ -285,5 +389,26 @@ This example also shows how you can pass any props to the underlying component -
   {:bg start-bg}
   {:classname "my-card"})
 
-(defn ^:export main [] (dc/start-devcard-ui!))
+(defstyled test-theme :div
+  (fn [{:keys [theme]}]
+    {:background (or (:bg theme) "blue")}))
 
+(defcard theme-provider-card
+  "Theme use is straight forward.
+
+  It wraps emotion's ThemeProvider calling clj->js first on the props.
+  Wrap your application with `theme-provider` passing it
+  a map or JS object of theme data.
+```clojure
+(defstyled test-theme :div\n  (fn [{:keys [theme]}]\n    {:background (or (:bg theme) \"blue\")}))
+
+(html\n  [:div\n   (theme-provider {:theme {:bg \"yellow\"}} (test-theme \"Hello there theme\"))\n   (test-theme \"no theme\")])
+```
+"
+  (html
+    [:div
+     (theme-provider {:theme {:bg "yellow"}}
+       (test-theme "Hello there theme"))
+     (test-theme "no theme")]))
+
+(defn ^:export main [] (dc/start-devcard-ui!))
