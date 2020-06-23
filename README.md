@@ -9,7 +9,7 @@ To use this library
 Include it in your deps.edn
 
 ```clojure
-dv/cljs-emotion {:mvn/version "2020-06-21"}
+dv/cljs-emotion {:mvn/version "2020-06-23"}
 ```
 
 And install emotion:
