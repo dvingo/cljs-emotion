@@ -6,7 +6,7 @@
     [cljs.reader :as edn]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
-    [dv.cljs-emotion :as em :refer [defstyled keyframes global-style]]))
+    [dv.cljs-emotion :refer [defstyled keyframes global-style theme-provider]]))
 (enable-console-print!)
 
 (defcard
@@ -18,7 +18,7 @@
   The source of these cards can be found here:
   https://github.com/dvingo/cljs-emotion/tree/master/src/dev/dv/cljs_emotion
 
-  The main API of this library is: `[defstyled keyframes global-style]`
+  The main API of this library is: `[defstyled keyframes global-style theme-provider]`
 
   defstyled is a wrapper around `@emotion/styled`
   Styled is multi-arity and supports passing functions that return maps of styles, a vector of styles that
@@ -32,12 +32,12 @@
 
 Require the library:
 ```clojure
-(require [dv.cljs-emotion :refer [defstyled keyframes global-style]])
+(require [dv.cljs-emotion :refer [defstyled keyframes global-style theme-provider]])
 ```
 
 Or for reagent support:
 ```clojure
-(require [dv.cljs-emotion-reagent :refer [defstyled keyframes global-style]])
+(require [dv.cljs-emotion-reagent :refer [defstyled keyframes global-style theme-provider]])
 ```
 
 You can pass any number of children to defstyled:
@@ -388,5 +388,27 @@ I've set this var to true so these classname will show up in the release build o
          (global-style {cls {:background bg}})])))
   {:bg start-bg}
   {:classname "my-card"})
+
+(defstyled test-theme :div
+  (fn [{:keys [theme]}]
+    {:background (or (:bg theme) "blue")}))
+
+(defcard theme-provider-card
+  "Theme use is straight forward.
+
+  It wraps emotion's ThemeProvider calling clj->js first on the props.
+  Wrap your application with `theme-provider` passing it
+  a map or JS object of theme data.
+```clojure
+(defstyled test-theme :div\n  (fn [{:keys [theme]}]\n    {:background (or (:bg theme) \"blue\")}))
+
+(html\n  [:div\n   (theme-provider {:theme {:bg \"yellow\"}} (test-theme \"Hello there theme\"))\n   (test-theme \"no theme\")])
+```
+"
+  (html
+    [:div
+     (theme-provider {:theme {:bg "yellow"}}
+       (test-theme "Hello there theme"))
+     (test-theme "no theme")]))
 
 (defn ^:export main [] (dc/start-devcard-ui!))

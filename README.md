@@ -15,13 +15,15 @@ dv/cljs-emotion {:mvn/version "2020-06-23"}
 And install emotion:
 
 ```bash
-yarn add @emotion/core @emotion/styled
+yarn add @emotion/core @emotion/styled emotion-theming
 ```
 
 Documentation and examples are here:
 
 https://dvingo.github.io/cljs-emotion
 
+
+---- 
 
 Notes for deploy:
 

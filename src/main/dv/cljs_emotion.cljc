@@ -2,13 +2,24 @@
   (:require
     #?@(:cljs [["react" :as react]
                ["@emotion/styled" :default styled]
-               ["@emotion/core" :as styled-core :refer [Global]]])
+               ["@emotion/core" :as styled-core :refer [Global]]
+               ["emotion-theming" :refer [ThemeProvider]]])
     #?(:cljs [goog.object :as g])
     [clojure.string :as str]
     [clojure.walk :as walk]
     [com.fulcrologic.guardrails.core :refer [>defn =>]]
     [clojure.string :as str])
   #?(:cljs (:require-macros [dv.cljs-emotion :refer [defstyled]])))
+
+;; from fulcro
+#?(:cljs
+   (defn force-children
+     "Utility function that will force a lazy sequence of children (recursively) into realized
+     vectors (React cannot deal with lazy seqs in production mode)"
+     [x]
+     (if (seq? x)
+       (to-array (mapv force-children x))
+       x)))
 
 #?(:cljs
    (defn keyframes [anim-map]
@@ -66,11 +77,11 @@
           (do
             ; (js/console.log "got function") (js/console.log x#)
 
-              (cljs.core/fn [arg#]
-                ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
-                (cljs.core/clj->js
-                  ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
-                  (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))))
+            (cljs.core/fn [arg#]
+              ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+              (cljs.core/clj->js
+                ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
+                (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))))
 
           ;; maps come up in value position for nested selectors
           (map? x#)
@@ -119,7 +130,7 @@
             (react/createElement el (set-class-name props class-name))
 
             (or (array? props) (coll? props))
-            (react/createElement el (set-class-name #js{} class-name) (to-array props))
+            (react/createElement el (set-class-name #js{} class-name) (force-children props))
 
             :else
             (react/createElement el (set-class-name #js{} class-name)))
@@ -131,10 +142,9 @@
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
           (let [props (clj->js (set-class-name props class-name))]
             (if (seq children)
-              (apply react/createElement el props (to-array children))
+              (apply react/createElement el props (force-children children))
               (react/createElement el props)))
-          (apply react/createElement el (set-class-name #js{} class-name) (to-array (list* props children)))
-          )))))
+          (apply react/createElement el (set-class-name #js{} class-name) (force-children (list* props children))))))))
 
 #?(:clj
    (defn get-type
@@ -161,7 +171,6 @@
           (~styled ~tag-name)))))
 
 #?(:cljs (def styled* styled))
-;; todo if only one arg is passed
 
 #?(:clj
    (defn get-cls-name
@@ -283,3 +292,18 @@
     (global-style
       {:body {:background-color "red"}}))
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Theme support
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#?(:cljs
+   (defn theme-provider
+     [props & children]
+     (when-not (contains? props :theme)
+       (throw (js/Error. "You must pass a :theme to the theme-provider.")))
+     (apply react/createElement ThemeProvider
+       (clj->js props)
+       (force-children children))))
+
+
