@@ -22,7 +22,7 @@ dev:
 
 # Make commits on master
 # gco gh-pages
-# git rebase master
+# git merge master
 # make gh-pages
 # gc -m
 # gpoh -f
