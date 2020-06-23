@@ -119,19 +119,22 @@
             (react/createElement el (set-class-name props class-name))
 
             (or (array? props) (coll? props))
-            (react/createElement el #js{} (to-array props))
+            (react/createElement el (set-class-name #js{} class-name) (to-array props))
 
             :else
-            (react/createElement el #js{}))
+            (react/createElement el (set-class-name #js{} class-name)))
 
           (catch js/Object e
             (js/console.error "Error invoking an emotion styled component: " (.getMessage e)))))
 
        ([props & children]
-        (let [props (clj->js (set-class-name props class-name))]
-          (if (seq children)
-            (apply react/createElement el props (to-array children))
-            (react/createElement el props)))))))
+        (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
+          (let [props (clj->js (set-class-name props class-name))]
+            (if (seq children)
+              (apply react/createElement el props (to-array children))
+              (react/createElement el props)))
+          (apply react/createElement el (set-class-name #js{} class-name) (to-array (list* props children)))
+          )))))
 
 #?(:clj
    (defn get-type
