@@ -4,14 +4,16 @@
                ["@emotion/styled" :default styled]
                ["@emotion/core" :as styled-core :refer [Global]]
                ["emotion-theming" :refer [ThemeProvider]]])
-    #?(:cljs [goog.object :as g])
-    [reagent.core :as r]
+    #?@(:cljs
+        [[goog.object :as g]
+         [reagent.core :as r]
+         [reagent.impl.template :as rt]
+         [reagent.impl.util :as rutil]])
     [clojure.string :as str]
     [clojure.walk :as walk]
     [com.fulcrologic.guardrails.core :refer [>defn =>]]
     [clojure.string :as str])
   #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled]])))
-
 
 #?(:cljs
    (defn relement?
@@ -120,7 +122,9 @@
             (react/createElement el (set-class-name #js{} class-name) props)
 
             (map? props)
-            (let [props (clj->js (set-class-name props class-name))]
+            (let [props (rt/convert-props props nil)
+                 props (clj->js (set-class-name props class-name))]
+              ;(js/console.log "reagent defstyled props are : " props)
               (react/createElement el props))
 
             (object? props)
@@ -143,7 +147,10 @@
 
        ([props & children]
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
-          (let [props (clj->js (set-class-name props class-name))]
+          (let [clss (:class props)
+                props (cond-> props clss (assoc :class (rutil/class-names clss)))
+                props (rt/convert-prop-value props)
+                props (clj->js (set-class-name props class-name))]
             (if (seq children)
               (apply react/createElement el props (force-children children))
               (react/createElement el props)))
