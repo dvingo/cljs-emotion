@@ -122,8 +122,8 @@
             (react/createElement el (set-class-name #js{} class-name) props)
 
             (map? props)
-            (let [props (rt/convert-props props nil)
-                 props (clj->js (set-class-name props class-name))]
+            (let [props (cond-> props (some? class-name) (rt/convert-props nil))
+                  props (clj->js (set-class-name props class-name))]
               ;(js/console.log "reagent defstyled props are : " props)
               (react/createElement el props))
 
@@ -143,7 +143,7 @@
             (react/createElement el (set-class-name #js{} class-name)))
 
           (catch js/Object e
-            (js/console.error "Error invoking an emotion styled component: " (.getMessage e)))))
+            (js/console.error "Error invoking an emotion styled component: " e))))
 
        ([props & children]
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
