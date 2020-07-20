@@ -136,7 +136,7 @@
             (react/createElement el (set-class-name #js{} class-name)))
 
           (catch js/Object e
-            (js/console.error "Error invoking an emotion styled component: " (.getMessage e)))))
+            (js/console.error "Error invoking an emotion styled component: " (.getMessage ^js e)))))
 
        ([props & children]
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
@@ -305,5 +305,3 @@
      (apply react/createElement ThemeProvider
        (clj->js props)
        (force-children children))))
-
-
