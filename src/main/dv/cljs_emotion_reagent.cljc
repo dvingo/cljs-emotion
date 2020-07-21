@@ -19,7 +19,8 @@
    (defn relement?
      "Is it a reagent vector? (or a best effort guess at least.)"
      [el]
-     (and (vector? el)
+     (and
+       (vector? el)
        (let [item (first el)]
          (or
            (keyword? item)
@@ -33,8 +34,7 @@
      vectors (React cannot deal with lazy seqs in production mode)"
      [x]
      (if (seq? x)
-       (to-array
-         (mapv force-children x))
+       (to-array (mapv force-children x))
        (if (relement? x)
          (r/as-element x)
          x))))
@@ -110,12 +110,12 @@
            :else props)))
 
 #?(:cljs
-   (defn react-factory [el class-name]
+   (defn react-factory
+     [el class-name]
      (fn
        ([]
         (react/createElement el (clj->js (set-class-name {} class-name))))
        ([props]
-
         (try
           (cond
             (or (react/isValidElement props) (string? props))
@@ -124,7 +124,6 @@
             (map? props)
             (let [props (cond-> props (some? class-name) (rt/convert-props nil))
                   props (clj->js (set-class-name props class-name))]
-              ;(js/console.log "reagent defstyled props are : " props)
               (react/createElement el props))
 
             (object? props)
@@ -133,7 +132,7 @@
             (relement? props)
             (react/createElement el (set-class-name #js{} class-name) (r/as-element props))
 
-            (vector? props)
+            (seq? props)
             (react/createElement el (set-class-name #js{} class-name) (force-children props))
 
             (array? props)
