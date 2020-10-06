@@ -1,10 +1,8 @@
 (ns dv.cljs-emotion.target-styled
   (:require
-    [devcards.core :as dc :refer (defcard)]
-    [cljs.reader :as edn]
-    [sablono.core :as sab :refer [html]]
+    [devcards.core :refer (defcard)]
+    [sablono.core :refer [html]]
     ["polished" :as p :refer [darken]]
-    ;[reagent.core :as r]
     [dv.cljs-emotion :as em :refer [defstyled keyframes global-style]]))
 
 (defcard

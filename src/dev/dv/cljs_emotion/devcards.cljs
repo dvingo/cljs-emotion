@@ -3,7 +3,6 @@
     [devcards.core :as dc :refer (defcard)]
     [dv.cljs-emotion.target-styled]
     [dv.cljs-emotion.reagent-cards]
-    [cljs.reader :as edn]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
     [dv.cljs-emotion :refer [defstyled keyframes global-style theme-provider]]))

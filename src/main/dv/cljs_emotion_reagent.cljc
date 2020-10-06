@@ -68,18 +68,13 @@
    ;; todo rename bc it also camelizes
    (defn wrap-call-style-fn []
      `(fn [x#]
-        ;(js/console.log "Wrapping value: " x#)
         (cond
-
           (cljs.core/fn? x#)
-          (do
-            ; (js/console.log "got function") (js/console.log x#)
-
-            (cljs.core/fn [arg#]
-              ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
-              (cljs.core/clj->js
-                ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
-                (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))))
+          (cljs.core/fn [arg#]
+            ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+            (cljs.core/clj->js
+              ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
+              (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true)))))
 
           ;; maps come up in value position for nested selectors
           (map? x#)
@@ -129,6 +124,7 @@
             (object? props)
             (react/createElement el (set-class-name props class-name))
 
+
             (relement? props)
             (react/createElement el (set-class-name #js{} class-name) (r/as-element props))
 
@@ -146,9 +142,13 @@
 
        ([props & children]
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
-          (let [clss (:class props)
+          (let [clss  (:class props)
                 props (cond-> props clss (assoc :class (rutil/class-names clss)))
-                props (rt/convert-prop-value props)
+                ;; 2020-10-06
+                ;; I'm not sure the use case for this - but it converts kebab case to camel case such that the props
+                ;; passed to functions in defstyled get camelCased props, which we do not want.
+                ;; I'm leaving it for now until I find the use case that I added this for.
+                ;props (rt/convert-prop-value props)
                 props (clj->js (set-class-name props class-name))]
             (if (seq children)
               (apply react/createElement el props (force-children children))

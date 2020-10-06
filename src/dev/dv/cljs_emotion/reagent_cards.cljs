@@ -72,3 +72,14 @@
        [test-theme "Hello there theme"])
      [test-theme "no theme"]]))
 
+(defstyled test-fn :div
+  (fn [{:keys [text-case background-color] :as props}]
+    (js/console.log "in defstyled fn props: " props)
+    {:text-transform   text-case
+     :background-color background-color}))
+
+(defcard test-props-card
+  "Testing the camel case logic"
+  (dc/reagent
+    [test-fn {:text-case        "uppercase"
+              :background-color "chartreuse"} "hi"]))
