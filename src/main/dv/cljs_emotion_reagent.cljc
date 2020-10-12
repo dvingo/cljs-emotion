@@ -9,6 +9,7 @@
          [reagent.core :as r]
          [reagent.impl.template :as rt]
          [reagent.impl.util :as rutil]])
+    [camel-snake-kebab.core :as csk]
     [clojure.string :as str]
     [clojure.walk :as walk]
     [com.fulcrologic.guardrails.core :refer [>defn =>]]
@@ -64,6 +65,14 @@
      (walk/postwalk #(cond-> % (keyword? %) (-> name kebab->camel))
        style-map)))
 
+(defn map->kebab
+  "Convert all keys in the map to kebab case keywords."
+  [m]
+  (into {}
+    (map (fn [[k v]] [(csk/->kebab-case k) v]) m)))
+
+(comment (map->kebab {:backgroundColor "blue"}))
+
 #?(:clj
    ;; todo rename bc it also camelizes
    (defn wrap-call-style-fn []
@@ -74,7 +83,7 @@
             ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
             (cljs.core/clj->js
               ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
-              (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true)))))
+              (camelize-keys (x# (map->kebab (cljs.core/js->clj arg# :keywordize-keys true))))))
 
           ;; maps come up in value position for nested selectors
           (map? x#)
@@ -144,11 +153,8 @@
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
           (let [clss  (:class props)
                 props (cond-> props clss (assoc :class (rutil/class-names clss)))
-                ;; 2020-10-06
-                ;; I'm not sure the use case for this - but it converts kebab case to camel case such that the props
-                ;; passed to functions in defstyled get camelCased props, which we do not want.
-                ;; I'm leaving it for now until I find the use case that I added this for.
-                ;props (rt/convert-prop-value props)
+                ;; converts properties for JS call as expected by react class->className, on-click->onClick etc.
+                props (rt/convert-prop-value props)
                 props (clj->js (set-class-name props class-name))]
             (if (seq children)
               (apply react/createElement el props (force-children children))
