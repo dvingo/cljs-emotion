@@ -114,6 +114,15 @@
            :else props)))
 
 #?(:cljs
+   (defn massage-props
+     [props class-name]
+     (let [clss  (:class props)
+           props (cond-> props clss (assoc :class (rutil/class-names clss)))
+           ;; converts properties for JS call as expected by react class->className, on-click->onClick etc.
+           props (rt/convert-prop-value props)]
+       (clj->js (set-class-name props class-name)))))
+
+#?(:cljs
    (defn react-factory
      [el class-name]
      (fn
@@ -126,13 +135,11 @@
             (react/createElement el (set-class-name #js{} class-name) props)
 
             (map? props)
-            (let [props (cond-> props (some? class-name) (rt/convert-props nil))
-                  props (clj->js (set-class-name props class-name))]
+            (let [props (massage-props props class-name)]
               (react/createElement el props))
 
             (object? props)
             (react/createElement el (set-class-name props class-name))
-
 
             (relement? props)
             (react/createElement el (set-class-name #js{} class-name) (r/as-element props))
@@ -151,11 +158,7 @@
 
        ([props & children]
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
-          (let [clss  (:class props)
-                props (cond-> props clss (assoc :class (rutil/class-names clss)))
-                ;; converts properties for JS call as expected by react class->className, on-click->onClick etc.
-                props (rt/convert-prop-value props)
-                props (clj->js (set-class-name props class-name))]
+          (let [props (massage-props props class-name)]
             (if (seq children)
               (apply react/createElement el props (force-children children))
               (react/createElement el props)))
