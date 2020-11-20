@@ -2,8 +2,7 @@
   (:require
     #?@(:cljs [["react" :as react]
                ["@emotion/styled" :default styled]
-               ["@emotion/core" :as styled-core :refer [Global]]
-               ["emotion-theming" :refer [ThemeProvider]]])
+               ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]])
     #?@(:cljs
         [[goog.object :as g]
          [reagent.core :as r]
