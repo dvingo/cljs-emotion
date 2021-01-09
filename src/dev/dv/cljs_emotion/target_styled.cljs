@@ -9,12 +9,12 @@
   "These examples show some more emotion API examples.")
 
 
-(defstyled prop-fn :div {:padding 20 :outline "1px solid"} )
+(defstyled prop-fn :div {:padding 20 :outline "1px solid"})
 
 (defstyled prop-fn2 :div
   {:padding 20
    :outline "1px solid"
-  "& > a"  {:color "hotpink"} } )
+   "& > a"  {:color "hotpink"}})
 
 ;(js/console.log (.withComponent (-> prop-fn meta ::em/styled) "button"))
 ;(set! js/my_thing (-> prop-fn meta ::em/styled))

@@ -2,13 +2,11 @@
   (:require
     #?@(:cljs [["react" :as react]
                ["@emotion/styled" :default styled]
-               ["@emotion/core" :as styled-core :refer [Global]]
-               ["emotion-theming" :refer [ThemeProvider]]])
+               ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]])
     #?(:cljs [goog.object :as g])
     [clojure.string :as str]
     [clojure.walk :as walk]
-    [com.fulcrologic.guardrails.core :refer [>defn =>]]
-    [clojure.string :as str])
+    [com.fulcrologic.guardrails.core :refer [>defn =>]])
   #?(:cljs (:require-macros [dv.cljs-emotion :refer [defstyled]])))
 
 ;; from fulcro
