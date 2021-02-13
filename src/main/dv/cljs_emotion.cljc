@@ -1,13 +1,24 @@
 (ns dv.cljs-emotion
   (:require
     #?@(:cljs [["react" :as react]
-               ["@emotion/styled" :default styled]
-               ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]])
-    #?(:cljs [goog.object :as g])
+               ["@emotion/hash" :as emotion-hash*]
+               ["@emotion/styled" :as styled]
+               ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]
+               [goog.object :as g]])
     [clojure.string :as str]
     [clojure.walk :as walk]
     [com.fulcrologic.guardrails.core :refer [>defn =>]])
   #?(:cljs (:require-macros [dv.cljs-emotion :refer [defstyled]])))
+
+;; Support plain cljs compiler and shadow.
+#?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
+#?(:cljs (def styled* (g/get styled "default")))
+
+#?(:cljs
+   (comment
+     styled*
+     ;(emotion-hash "hello world")
+     ))
 
 ;; from fulcro
 #?(:cljs
@@ -168,7 +179,6 @@
           :else
           (~styled ~tag-name)))))
 
-#?(:cljs (def styled* styled))
 
 #?(:clj
    (defn get-cls-name
@@ -209,6 +219,18 @@
                ~children* (cljs.core/clj->js ~children*)
                ~component-type ~(get-type `styled* el)
                ~clss (.apply ~component-type ~component-type ~children*)]
+
+           ;; idea
+           ;; Add an additional className to
+           ;; to the `clss` which is the hash of the file name and position etc similar to what emotion does
+           ;; when you postwalk the styles at runtime, if the key is a symbol in style object see if
+           ;; it has the property "dv.cljs-emotion.className" and if present concat it to the prop className
+           ;; so that it is included in output className - then also replace the symbol with the string of the className
+           ;; as css selector.
+           ;; this way you are effectively copying the targeting of other styled components, without using a babel plugin.
+           ;; you're already calculating the classname at macroexpansion time so you already have a place where this
+           ;; happens - still elide that one in prod builds, but include this new one always.
+           ;;
            (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
            (def ~component-name
              (with-meta (react-factory ~clss ~class-name)
