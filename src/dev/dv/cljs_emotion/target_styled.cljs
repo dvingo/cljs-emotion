@@ -8,7 +8,6 @@
 (defcard
   "These examples show some more emotion API examples.")
 
-
 (defstyled prop-fn :div {:padding 20 :outline "1px solid"})
 
 (defstyled prop-fn2 :div
@@ -56,6 +55,98 @@
   (hover-example "HELLLO")
   )
 
-;(defcard )
+(defstyled a-child :div
+  {:color "deepSKYBlue"})
 
+(defstyled a-parent :div
+  {:color "red"
+   a-child {:color "darkorchid"}})
+
+(defstyled a-parent2 :div
+  (fn [{:keys [color]}]
+    (js/console.log "COLOR: " color)
+
+    {:color  "red"
+     a-child {:color (or color "darkorchid")}
+     "@media (min-width: 1024px)"
+             {a-child {:color "black"}}}))
+
+(defcard a-thing
+  "# Target another defstyled component
+  If you use a `defstyled` in key position in the styles map a CSS classname is used in its place that is a hash of its fully qualified
+  symbol name.
+
+  This works inside media queries and functions (see the next example).
+
+  ```clojure
+  (defstyled a-child :div
+   {:color \"deepSKYBlue\"})
+
+  (defstyled a-parent :div
+    {:color \"red\"
+     a-child {:color \"darkorchid\"}})
+
+  [:div
+   [a-child \"child should be deepSkyBlue\"]
+   [a-parent \"parent should be red\"]
+   [a-parent
+     [a-child \"nested child should be darkorchid\"]]]
+  ```
+  "
+  (html
+    [:div
+     (a-child "child should be deepSkyBlue")
+     (a-parent "parent should be red")
+     (a-parent
+       (a-child "nested child should be darkorchid"))]))
+
+(defcard a-card
+  "# Target another defstyled component (continued)
+  ```clojure
+  (defstyled a-child :div
+   {:color \"deepSKYBlue\"})
+
+  (defstyled a-parent2 :div
+    (fn [{:keys [color]}]
+      {:color  \"red\"
+       a-child {:color (or color \"darkorchid\")}
+       \"@media (min-width: 1024px)\"
+       {a-child {:color \"black\"}}}))
+
+  [:div
+   [a-child \"child should be deepSkyBlue\"]
+   [a-parent \"parent should be red\"]
+   [a-parent
+     [a-child \"nested child should be darkorchid, or black if window is >= 1024px\"]]]
+  ```
+  "
+  (html
+    [:div
+     (a-parent2 {:color "blue"} "parent should be red")
+     (a-parent2 {:color "steelblue"}
+       (a-child "nested child should be darkorchid"))]))
+
+(defcard a-card2
+  "# Target another defstyled component 123
+  ```clojure
+   (defstyled a-child :div
+    {:color \"deepSKYBlue\"})
+
+  (defstyled a-parent :div
+    {:color \"red\"
+     a-child {:color \"darkorchid\"}})
+
+  [:div
+   (a-child \"child should be deepSkyBlue\")
+   (a-parent \"parent should be red\")
+   (a-parent
+     (a-child \"nested child should be darkorchid\"))]
+  ```
+  "
+  (html
+    [:div
+     (a-child "child should be deepSkyBlue")
+     (a-parent "parent should be red")
+     (a-parent
+       (a-child "nested child should be darkorchid"))]))
 

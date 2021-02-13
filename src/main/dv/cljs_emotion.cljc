@@ -14,12 +14,6 @@
 #?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
 #?(:cljs (def styled* (g/get styled "default")))
 
-#?(:cljs
-   (comment
-     styled*
-     ;(emotion-hash "hello world")
-     ))
-
 ;; from fulcro
 #?(:cljs
    (defn force-children
@@ -51,8 +45,18 @@
 
 #?(:cljs
    (defn camelize-keys
+     "Also replaces styled components with their css classname is key position."
      [style-map]
-     (walk/postwalk #(cond-> % (keyword? %) (-> name kebab->camel))
+     (walk/postwalk
+       (fn in-walk [v]
+         (cond
+           (keyword? v)
+           (-> v name kebab->camel)
+
+           (and (meta v) (contains? (meta v) ::hashed-name))
+           (str "." (-> v meta ::hashed-name))
+
+           :else v))
        style-map)))
 
 (comment
@@ -68,8 +72,7 @@
           (println "found keyword")
           (keyword (kebab->camel (name item))))
         (map-entry?)
-        :elsee item)
-      )
+        :however item))
     {:background    "lightblue"
      :font-size     20
      :border-radius "10px"})
@@ -82,12 +85,20 @@
         ;(js/console.log "Wrapping value: " x#)
         (cond
 
+          ;; Another emotion styled component created with this lib.
+          (and (meta x#) (contains? (meta x#) ::hashed-name))
+          (str "." (-> x# meta ::hashed-name))
+
           (cljs.core/fn? x#)
           (do
             ; (js/console.log "got function") (js/console.log x#)
 
             (cljs.core/fn [arg#]
               ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+
+              ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
+              (cljs.core/js-delete arg# "children")
+
               (cljs.core/clj->js
                 ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
                 (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))))
@@ -107,18 +118,26 @@
        goog.DEBUG)))
 
 #?(:cljs
+   (defn add-class-name [props class-name]
+     (if (object? props)
+       (doto props
+         (g/set "className"
+           (->> [class-name (g/get props "className")]
+             (str/join " ")
+             (str/trim))))
+       (update props :className #(if (nil? %) class-name (str class-name " " %))))))
+
+#?(:cljs (defn hashit [string] (str "dvcss-" (emotion-hash string))))
+
+#?(:cljs
    (defn set-class-name [props class-name]
-     (cond (and (add-class-names?) (object? props))
-           (doto props
-             (g/set "className"
-               (->> [class-name (g/get props "className")]
-                 (str/join " ")
-                 (str/trim))))
-
-           (and (add-class-names?) class-name)
-           (update props :className #(if (nil? %) class-name (str class-name " " %)))
-
-           :else props)))
+     (if class-name
+       (let [hashed-name (hashit class-name)
+             props       (add-class-name props hashed-name)]
+         (if (add-class-names?)
+           (add-class-name props class-name)
+           props))
+       props)))
 
 #?(:cljs
    (defn react-factory [el class-name]
@@ -145,7 +164,7 @@
             (react/createElement el (set-class-name #js{} class-name)))
 
           (catch js/Object e
-            (js/console.error "Error invoking an emotion styled component: " (.getMessage ^js e)))))
+            (js/console.error "Error invoking an emotion styled component: " e))))
 
        ([props & children]
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
@@ -179,7 +198,6 @@
           :else
           (~styled ~tag-name)))))
 
-
 #?(:clj
    (defn get-cls-name
      [namespace-name print-style component-sym]
@@ -204,12 +222,15 @@
 #?(:clj
    (defmacro defstyled
      ([component-name el & children]
-      (let [component-type (gensym "component-type")
-            clss           (gensym "clss")
-            class-name     (gensym "className")
-            children*      (gensym "children")]
+      (let [component-type  (gensym "component-type")
+            clss            (gensym "clss")
+            class-name      (gensym "className")
+            full-class-name (gensym "fullClassName")
+            children*       (gensym "children")]
         `(let [~class-name ~(get-cls-name-from-meta (-> &env :ns :name) component-name)
+               ~full-class-name ~(str (-> &env :ns :name) "/" component-name)
                ~children*
+
                (walk/postwalk
                  ;; todo here you can do props validation also
                  ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
@@ -219,22 +240,11 @@
                ~children* (cljs.core/clj->js ~children*)
                ~component-type ~(get-type `styled* el)
                ~clss (.apply ~component-type ~component-type ~children*)]
-
-           ;; idea
-           ;; Add an additional className to
-           ;; to the `clss` which is the hash of the file name and position etc similar to what emotion does
-           ;; when you postwalk the styles at runtime, if the key is a symbol in style object see if
-           ;; it has the property "dv.cljs-emotion.className" and if present concat it to the prop className
-           ;; so that it is included in output className - then also replace the symbol with the string of the className
-           ;; as css selector.
-           ;; this way you are effectively copying the targeting of other styled components, without using a babel plugin.
-           ;; you're already calculating the classname at macroexpansion time so you already have a place where this
-           ;; happens - still elide that one in prod builds, but include this new one always.
-           ;;
            (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
            (def ~component-name
              (with-meta (react-factory ~clss ~class-name)
-               {::styled ~clss})))))))
+               {::styled      ~clss
+                ::hashed-name (hashit ~full-class-name)})))))))
 
 #?(:clj
    (comment

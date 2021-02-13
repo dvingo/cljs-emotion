@@ -1,7 +1,8 @@
 (ns dv.cljs-emotion-reagent
   (:require
     #?@(:cljs [["react" :as react]
-               ["@emotion/styled" :default styled]
+               ["@emotion/hash" :as emotion-hash*]
+               ["@emotion/styled" :as styled]
                ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]])
     #?@(:cljs
         [[goog.object :as g]
@@ -10,9 +11,13 @@
          [reagent.impl.util :as rutil]])
     [camel-snake-kebab.core :as csk]
     [clojure.walk :as walk]
-    [com.fulcrologic.guardrails.core :refer [>defn =>]]
-    [clojure.string :as str])
+    [clojure.string :as str]
+    [com.fulcrologic.guardrails.core :refer [>defn =>]])
   #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled]])))
+
+;; Support plain cljs compiler and shadow.
+#?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
+#?(:cljs (def styled* (g/get styled "default")))
 
 #?(:cljs
    (defn relement?
@@ -59,8 +64,18 @@
 
 #?(:cljs
    (defn camelize-keys
+     "Also replaces styled components with their css classname is key position."
      [style-map]
-     (walk/postwalk #(cond-> % (keyword? %) (-> name kebab->camel))
+     (walk/postwalk
+       (fn [v]
+         (cond
+           (keyword? v)
+           (-> v name kebab->camel)
+
+           (and (meta v) (contains? (meta v) ::hashed-name))
+           (str "." (-> v meta ::hashed-name))
+
+           :else v))
        style-map)))
 
 (defn map->kebab
@@ -76,6 +91,11 @@
    (defn wrap-call-style-fn []
      `(fn [x#]
         (cond
+
+          ;; Another emotion styled component created with this lib.
+          (and (meta x#) (contains? (meta x#) ::hashed-name))
+          (str "." (-> x# meta ::hashed-name))
+
           (cljs.core/fn? x#)
           (cljs.core/fn [arg#]
             ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
@@ -98,21 +118,30 @@
        goog.DEBUG)))
 
 #?(:cljs
+   (defn add-class-name [props class-name]
+     (if (object? props)
+       (doto props
+         (g/set "className"
+           (->> [class-name (g/get props "className")]
+             (str/join " ")
+             (str/trim))))
+       (update props :className #(if (nil? %) class-name (str class-name " " %))))))
+
+#?(:cljs (defn hashit [string] (str "dvcss-" (emotion-hash string))))
+
+#?(:cljs
    (defn set-class-name [props class-name]
-     (cond (and (add-class-names?) (object? props))
-           (doto props
-             (g/set "className"
-               (->> [class-name (g/get props "className")]
-                 (str/join " ")
-                 (str/trim))))
-
-           (and (add-class-names?) class-name)
-           (update props :className #(if (nil? %) class-name (str class-name " " %)))
-
-           :else props)))
+     (if class-name
+       (let [hashed-name (hashit class-name)
+             props       (add-class-name props hashed-name)]
+         (if (add-class-names?)
+           (add-class-name props class-name)
+           props))
+       props)))
 
 #?(:cljs
    (defn massage-props
+     "Allows using kebab-case prop names."
      [props class-name]
      (let [clss  (:class props)
            props (cond-> props clss (assoc :class (rutil/class-names clss)))
@@ -186,9 +215,6 @@
           :else
           (~styled ~tag-name)))))
 
-#?(:cljs (def styled* styled))
-;; todo if only one arg is passed
-
 #?(:clj
    (defn get-cls-name
      [namespace-name print-style component-sym]
@@ -213,11 +239,13 @@
 #?(:clj
    (defmacro defstyled
      ([component-name el & children]
-      (let [component-type (gensym "component-type")
-            clss           (gensym "clss")
-            class-name     (gensym "className")
-            children*      (gensym "children")]
+      (let [component-type  (gensym "component-type")
+            clss            (gensym "clss")
+            class-name      (gensym "className")
+            full-class-name (gensym "fullClassName")
+            children*       (gensym "children")]
         `(let [~class-name ~(get-cls-name-from-meta (-> &env :ns :name) component-name)
+               ~full-class-name ~(str (-> &env :ns :name) "/" component-name)
                ~children*
                (walk/postwalk
                  ;; todo here you can do props validation also
@@ -231,7 +259,8 @@
            (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
            (def ~component-name
              (with-meta (react-factory ~clss ~class-name)
-               {::styled ~clss})))))))
+               {::styled      ~clss
+                ::hashed-name (hashit ~full-class-name)})))))))
 
 #?(:cljs
    (def global* (react-factory Global nil)))

@@ -1,6 +1,6 @@
 (ns dv.cljs-emotion.reagent-cards
   (:require
-    [devcards.core :as dc :refer (defcard)]
+    [devcards.core :as dc :refer (defcard defcard-rg)]
     [dv.cljs-emotion-reagent :refer [defstyled keyframes global-style theme-provider]]))
 
 (defcard
@@ -83,3 +83,71 @@
   (dc/reagent
     [test-fn {:text-case        "uppercase"
               :background-color "chartreuse"} "hi"]))
+
+(defstyled a-child :div
+  {:color "deepSKYBlue"})
+
+(defstyled a-parent :div
+  {:color "red"
+   a-child {:color "darkorchid"}})
+
+(defcard-rg a-thing
+  "# Target another defstyled component
+  If you use a `defstyled` in key position in the styles map a CSS classname is used in its place that is a hash of its fully qualified
+  symbol name.
+
+  This works inside media queries and functions (see the next example).
+
+  ```clojure
+  (defstyled a-child :div
+   {:color \"deepSKYBlue\"})
+
+  (defstyled a-parent :div
+    {:color \"red\"
+     a-child {:color \"darkorchid\"}})
+
+  [:div
+   [a-child \"child should be deepSkyBlue\"]
+   [a-parent \"parent should be red\"]
+   [a-parent
+     [a-child \"nested child should be darkorchid\"]]]
+  ```
+  "
+  [:div
+   [a-child "child should be deepSkyBlue"]
+   [a-parent "parent should be red"]
+   [a-parent
+    [a-child "nested child should be darkorchid"]]])
+
+(defstyled a-parent2 :div
+  (fn [{:keys [color]}]
+    {:color  "red"
+     a-child {:color (or color "darkorchid")}
+     "@media (min-width: 1024px)"
+     {a-child {:color "black"}}}))
+
+(defcard-rg a-thing2
+  "# Target another defstyled component (continued)
+  ```clojure
+  (defstyled a-child :div
+   {:color \"deepSKYBlue\"})
+
+  (defstyled a-parent2 :div
+    (fn [{:keys [color]}]
+      {:color  \"red\"
+       a-child {:color (or color \"darkorchid\")}
+       \"@media (min-width: 1024px)\"
+       {a-child {:color \"black\"}}}))
+
+  [:div
+   [a-child \"child should be deepSkyBlue\"]
+   [a-parent \"parent should be red\"]
+   [a-parent
+     [a-child \"nested child should be darkorchid, or black if window is >= 1024px\"]]]
+  ```
+  "
+  [:div
+   [a-child "child should be deepSkyBlue"]
+   [a-parent2 "parent should be red"]
+   [a-parent2 {:color "steelblue"}
+    [a-child "nested child should be darkorchid"]]])
