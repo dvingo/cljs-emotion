@@ -2,26 +2,25 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/dv/cljs-emotion.svg)](https://clojars.org/dv/cljs-emotion)
 
+Documentation and example usage are hosted in devcards here:
+
+https://dvingo.github.io/cljs-emotion/#!/dv.cljs_emotion.devcards
+
+https://dvingo.github.io/cljs-emotion
+
+For info about emotion itself, see:
+
 https://emotion.sh/docs/introduction
 
-To use this library
+## To use this library
 
-Include it in your deps.edn
-
-```clojure
-dv/cljs-emotion {:mvn/version "2020-06-23"}
-```
+Include it in your clojure project dependency list (see most recent version on Clojars).
 
 And install emotion:
 
 ```bash
-yarn add @emotion/core @emotion/styled emotion-theming
+npm install @emotion/react @emotion/styled
 ```
-
-Documentation and examples are here:
-
-https://dvingo.github.io/cljs-emotion
-
 
 ---- 
 
@@ -29,15 +28,15 @@ Notes for deploy:
 
 Build a deployable jar of this library:
 
-    $ clojure -A:jar
+    clojure -M:jar
 
 Install it locally:
 
-    $ clojure -A:install
+    clojure -M:install
 
 Deploy it to Clojars -- needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` environment variables:
 
-    $ clojure -A:deploy
+    clojure -M:deploy
 
 # development
 
