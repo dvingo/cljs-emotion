@@ -79,7 +79,6 @@
   )
 
 #?(:clj
-   ;; todo rename bc it also camelizes
    (defn wrap-call-style-fn []
      `(fn [x#]
         ;(js/console.log "Wrapping value: " x#)
@@ -283,7 +282,7 @@
 
   (walk/postwalk
     (fn [item]
-      (println "item: " item " map entyr: " (map-entry? item) " vec? " (vector? item))
+      (println "item: " item " map entry: " (map-entry? item) " vec? " (vector? item))
       (cond
         (keyword? item)
         (do
