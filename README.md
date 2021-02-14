@@ -14,16 +14,12 @@ https://emotion.sh/docs/introduction
 
 ## To use this library
 
-Include it in your deps.edn
-
-```clojure
-dv/cljs-emotion {:mvn/version "2020-10-13"}
-```
+Include it in your clojure project dependency list (see most recent version on Clojars).
 
 And install emotion:
 
 ```bash
-yarn add @emotion/react @emotion/styled
+npm install @emotion/react @emotion/styled
 ```
 
 ---- 
