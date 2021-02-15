@@ -99,6 +99,10 @@
           (cljs.core/fn? x#)
           (cljs.core/fn [arg#]
             ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+
+            ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
+            (cljs.core/js-delete arg# "children")
+
             (cljs.core/clj->js
               ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
               (camelize-keys (x# (map->kebab (cljs.core/js->clj arg# :keywordize-keys true))))))
@@ -257,10 +261,19 @@
                ~component-type ~(get-type `styled* el)
                ~clss (.apply ~component-type ~component-type ~children*)]
            (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
+
            (def ~component-name
              (with-meta (react-factory ~clss ~class-name)
                {::styled      ~clss
-                ::hashed-name (hashit ~full-class-name)})))))))
+                ::hashed-name (hashit ~full-class-name)}))
+
+           (cljs.core/specify! ~component-name
+             ;~'IPrintWithWriter
+             ;(~'-pr-writer [this# writer# _#]
+             ;  (~'-write writer# (cljs.core/str this#)))
+             ~'Object
+             (~'toString [this#]
+               (cljs.core/str "." (::hashed-name (meta ~component-name))))))))))
 
 #?(:cljs
    (def global* (react-factory Global nil)))
@@ -287,5 +300,3 @@
      (apply react/createElement ThemeProvider
        (clj->js props)
        (force-children children))))
-
-
