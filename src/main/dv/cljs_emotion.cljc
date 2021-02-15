@@ -2,7 +2,7 @@
   (:require
     #?@(:cljs [["react" :as react]
                ["@emotion/hash" :as emotion-hash*]
-               ["@emotion/styled" :as styled]
+               ["@emotion/styled" :as styled*]
                ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]
                [goog.object :as g]])
     [clojure.string :as str]
@@ -12,7 +12,7 @@
 
 ;; Support plain cljs compiler and shadow.
 #?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
-#?(:cljs (def styled* (g/get styled "default")))
+#?(:cljs (def styled (g/get styled* "default")))
 
 ;; from fulcro
 #?(:cljs
@@ -175,27 +175,27 @@
 
 #?(:clj
    (defn get-type
-     [styled tag-name]
+     [styled-arg tag-name]
      (cond
        ;; if literals, don't need to determine type at runtime
-       (string? tag-name) `(goog.object/get ~styled ~tag-name)
-       (keyword? tag-name) `(goog.object/get ~styled ~(name tag-name))
+       ;; a dom element like :div, same as styled.div``
+       (string? tag-name) `(goog.object/get ~styled-arg ~tag-name)
+       (keyword? tag-name) `(goog.object/get ~styled-arg ~(name tag-name))
        :else
        `(cond
-          ;; a dom element like :div, same as styled.div``
           (string? ~tag-name)
-          (goog.object/get ~styled ~tag-name)
+          (goog.object/get ~styled-arg ~tag-name)
 
           (keyword? ~tag-name)
-          (goog.object/get ~styled ~(name tag-name))
+          (goog.object/get ~styled-arg ~(name tag-name))
 
           ;; Another styled component
           (::styled (meta ~tag-name))
-          (~styled (::styled (meta ~tag-name)))
+          (.call ~styled-arg ~styled-arg (::styled (meta ~tag-name)))
 
           ;; A React component
           :else
-          (~styled ~tag-name)))))
+          (.call ~styled-arg ~styled-arg ~tag-name)))))
 
 #?(:clj
    (defn get-cls-name
@@ -237,7 +237,7 @@
                  ~(vec children))
                ;; pass js structures to the lib
                ~children* (cljs.core/clj->js ~children*)
-               ~component-type ~(get-type `styled* el)
+               ~component-type ~(get-type `styled el)
                ~clss (.apply ~component-type ~component-type ~children*)]
            (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
 
@@ -306,7 +306,7 @@
      :border-radius "10px"}))
 
 #?(:cljs
-   (def global* (react-factory Global nil)))
+   (def ^:private global* (react-factory Global nil)))
 
 ;; emotion doesn't allow functions in nested position, only
 ;; objects and arrays of objects
