@@ -2,7 +2,7 @@
   (:require
     [devcards.core :as dc :refer (defcard)]
     [sablono.core :refer [html]]
-    ["polished" :as p :refer [darken]]
+    ["polished" :as p :refer [darken lighten]]
     ["react" :as react]
     ["react-dom" :as react-dom]
     [dv.cljs-emotion :as em :refer [defstyled keyframes global-style]]))
@@ -122,3 +122,48 @@
   (dc/dom-node
     (fn [data-atom node]
       (react-dom/render (react/createElement my-component) node))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; styled component in selector string
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defstyled a-parent3 :div
+  (fn [_]
+    {:color  "red"
+     (str a-child " + " a-child)
+             {:color            "#eee"
+              :background-color "hsl(0, 0%, 48%)"
+              :padding          "1em"
+              :border-top       "1px solid"}
+     a-child {:color            "darkorchid"
+              :background-color "paleVIOLETRed"}
+     "@media (min-width: 1024px)"
+             {a-child {:color "black"}
+              (str a-child " + " a-child)
+                      {:background-color (lighten 0.2 "hsl(0, 0%, 48%)")}}}))
+
+(dc/defcard-doc
+  "# Target another defstyled component in a combinator selector"
+  (dc/mkdn-pprint-source a-parent3)
+  "Here we are using a styled component as part of a larger CSS Selector expression.
+  This works by implementing `toString` for styled components, returning their class selector."
+  "
+ ```clojure
+   (a-parent3
+    \"HELLLO\"
+    (a-child \"first\")
+    (a-child \"second\")
+    (a-child \"third\")
+    (a-child \"fourth\")
+    (a-child \"fifth\"))
+ ```")
+
+(defcard
+  (a-parent3
+    "HELLLO"
+    (a-child "first")
+    (a-child "second")
+    (a-child "third")
+    (a-child "fourth")
+    (a-child "fifth")))

@@ -1,5 +1,6 @@
 (ns dv.cljs-emotion.reagent-cards
   (:require
+    ["polished" :as p :refer [darken lighten]]
     [devcards.core :as dc :refer (defcard defcard-rg)]
     [dv.cljs-emotion-reagent :refer [defstyled keyframes global-style theme-provider]]))
 
@@ -88,7 +89,7 @@
   {:color "deepSKYBlue"})
 
 (defstyled a-parent :div
-  {:color "red"
+  {:color  "red"
    a-child {:color "darkorchid"}})
 
 (defcard-rg a-thing
@@ -124,7 +125,7 @@
     {:color  "red"
      a-child {:color (or color "darkorchid")}
      "@media (min-width: 1024px)"
-     {a-child {:color "black"}}}))
+             {a-child {:color "black"}}}))
 
 (defcard-rg a-thing2
   "# Target another defstyled component (continued)
@@ -151,3 +152,50 @@
    [a-parent2 "parent should be red"]
    [a-parent2 {:color "steelblue"}
     [a-child "nested child should be darkorchid"]]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; styled component in selector string
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defstyled a-parent3 :div
+  (fn [_]
+    {:color  "red"
+     (str a-child " + " a-child)
+             {:color            "#eee"
+              :background-color "hsl(0, 0%, 48%)"
+              :padding          "1em"
+              :border-top       "1px solid"}
+     a-child {:color            "darkorchid"
+              :background-color "paleVIOLETRed"}
+     "@media (min-width: 1024px)"
+             {a-child {:color "black"}
+              (str a-child " + " a-child)
+                      {:background-color (lighten 0.2 "hsl(0, 0%, 48%)")}}}))
+
+(dc/defcard-doc
+  "# Target another defstyled component in a combinator selector"
+  (dc/mkdn-pprint-source a-parent3)
+  "Here we are using a styled component as part of a larger CSS Selector expression.
+  This works by implementing `toString` for styled components, returning their class selector."
+  "
+ ```clojure
+  [:div
+   [a-parent3
+    \"HELLLO\"
+    (a-child \"first\")
+    (a-child \"second\")
+    (a-child \"third\")
+    (a-child \"fourth\")
+    (a-child \"fifth\")]]
+ ```")
+
+(defcard
+  (dc/reagent
+    [:div
+     [a-parent3
+      "HELLLO"
+      (a-child "first")
+      (a-child "second")
+      (a-child "third")
+      (a-child "fourth")
+      (a-child "fifth")]]))

@@ -240,10 +240,18 @@
                ~component-type ~(get-type `styled* el)
                ~clss (.apply ~component-type ~component-type ~children*)]
            (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
+
            (def ~component-name
              (with-meta (react-factory ~clss ~class-name)
                {::styled      ~clss
-                ::hashed-name (hashit ~full-class-name)})))))))
+                ::hashed-name (hashit ~full-class-name)}))
+           (cljs.core/specify! ~component-name
+             ;~'IPrintWithWriter
+             ;(~'-pr-writer [this# writer# _#]
+             ;  (~'-write writer# (cljs.core/str this#)))
+             ~'Object
+             (~'toString [this#]
+               (cljs.core/str "." (::hashed-name (meta ~component-name))))))))))
 
 #?(:clj
    (comment
