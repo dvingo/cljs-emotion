@@ -44,10 +44,6 @@
          x))))
 
 #?(:cljs
-   (defn keyframes [anim-map]
-     (styled-core/keyframes (clj->js anim-map))))
-
-#?(:cljs
    (>defn kebab->camel
      [prop]
      [string? => string?]
@@ -85,6 +81,10 @@
     (map (fn [[k v]] [(csk/->kebab-case k) v]) m)))
 
 (comment (map->kebab {:backgroundColor "blue"}))
+
+#?(:cljs
+   (defn keyframes [anim-map]
+     (styled-core/keyframes (clj->js (camelize-keys anim-map)))))
 
 #?(:clj
    ;; todo rename bc it also camelizes
