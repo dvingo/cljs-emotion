@@ -25,10 +25,6 @@
        x)))
 
 #?(:cljs
-   (defn keyframes [anim-map]
-     (styled-core/keyframes (clj->js anim-map))))
-
-#?(:cljs
    (>defn kebab->camel
      [prop]
      [string? => string?]
@@ -58,6 +54,10 @@
 
            :else v))
        style-map)))
+
+#?(:cljs
+   (defn keyframes [anim-map]
+     (styled-core/keyframes (clj->js (camelize-keys anim-map)))))
 
 (comment
   (kebab->camel (name :border-radius))

@@ -182,30 +182,33 @@ I've set this var to true so these classname will show up in the release build o
       {:.my-thing {:background "navy" :color "#cce" mw-700 {:background "black"}}})]))
 
 (def animation
-  (keyframes {:from {:background "transparent"}
-              :to   {:background "grey"}}))
+  (keyframes {:from {:background-color "transparent"}
+              :to   {:background-color "grey"}}))
 
-(defn test-body [{:keys [time]}]
-  {:animation (str animation " " time "s ease-in-out infinite")}
-  )
+(defn animation-styles [{:keys [time]}]
+  {:animation (str animation " " time "s ease-in-out infinite")})
 
 (defstyled with-anim :div
-  test-body)
+  animation-styles)
 
 ;; keyframes
+(defn animation-card [a o]
+  (html
+    [:div
+     [:p "animation time: " (:time @a) " seconds"]
+     [:button {:on-click #(swap! a update :time inc)} "inc"]
+     [:button {:on-click #(swap! a update :time dec)} "dec"]
+     (with-anim {:time (:time @a)} "Some text here")]))
+
+(dc/defcard-doc
+  "Keyframe animations are supported - this is built into emotion. "
+  (dc/mkdn-pprint-source animation)
+  (dc/mkdn-pprint-source animation-styles)
+  (dc/mkdn-pprint-source with-anim)
+  (dc/mkdn-pprint-source animation-card))
+
 (defcard keyframes
-  "Keyframe animations are supported - this is built into emotion.
-```clojure
-(def animation\n  (keyframes {:from {:background \"transparent\"}\n              :to {:background \"grey\"} } ))\n\n(defstyled with-anim :div\n  (fn [{:keys [time]}]\n    {:animation (str animation \" \" time \"s ease-in-out infinite\")}))\n
-  (with-anim {:time (:time @a)} \"Some text here\")]
-  ```"
-  (fn [a o]
-    (html
-      [:div
-       [:p "animation time: " (:time @a) " seconds"]
-       [:button {:on-click #(swap! a update :time inc)} "inc"]
-       [:button {:on-click #(swap! a update :time dec)} "dec"]
-       (with-anim {:time (:time @a)} "Some text here")]))
+  animation-card
   {:time 1})
 
 (defstyled with-anim2 :div

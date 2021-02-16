@@ -2,6 +2,7 @@
   (:require
     ["polished" :as p :refer [darken lighten]]
     [devcards.core :as dc :refer (defcard defcard-rg)]
+    [reagent.core :as r]
     [dv.cljs-emotion-reagent :refer [defstyled keyframes global-style theme-provider]]))
 
 (defcard
@@ -199,3 +200,34 @@
       (a-child "third")
       (a-child "fourth")
       (a-child "fifth")]]))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Animation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defstyled with-anim :div
+  (fn animation-styles [{:keys [time]}]
+    {:animation (str
+                  (keyframes {:from {:background-color "transparent"}
+                              :to   {:background-color "grey"}})
+                  " " time "s ease-in-out infinite")}))
+
+(defn animation-card [a _]
+  [:div
+   [:p "animation time: " (:time @a) " seconds"]
+   [:button {:on-click #(swap! a update :time inc)} "inc"]
+   [:button {:on-click #(swap! a update :time dec)} "dec"]
+   (with-anim {:time (:time @a)} "Some text here")])
+
+(dc/defcard-doc
+  "Keyframe animations are supported - this is built into emotion. "
+  (dc/mkdn-pprint-source with-anim)
+  (dc/mkdn-pprint-source animation-card))
+
+(def animation-state (r/atom {:time 1}))
+
+(defcard-rg keyframes
+  [animation-card animation-state]
+  animation-state)
