@@ -3,7 +3,7 @@
     ["polished" :as p :refer [darken lighten]]
     [devcards.core :as dc :refer (defcard defcard-rg)]
     [reagent.core :as r]
-    [dv.cljs-emotion-reagent :refer [defstyled keyframes global-style theme-provider]]))
+    [dv.cljs-emotion-reagent :refer [css defstyled keyframes global-style theme-provider]]))
 
 (defcard
   "These examples demonstrate reagent use.")
@@ -201,8 +201,6 @@
       (a-child "fourth")
       (a-child "fifth")]]))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Animation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -231,3 +229,14 @@
 (defcard-rg keyframes
   [animation-card animation-state]
   animation-state)
+
+(defn anon-styles []
+  (css :div {:css {:background "lightgrey"}}
+    [:p "Some text on a lightgrey background."]))
+
+(dc/defcard-doc
+  "# Anonymous inline styles support.
+   You can use the `css` helper to style a react element inline without needing to create a component."
+  (dc/mkdn-pprint-source anon-styles))
+
+(defcard (anon-styles))
