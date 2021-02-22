@@ -3,7 +3,7 @@
     #?@(:cljs [["react" :as react]
                ["@emotion/hash" :as emotion-hash*]
                ["@emotion/styled" :as styled*]
-               ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]])
+               ["@emotion/react" :as styled-core :refer [jsx Global ThemeProvider]]])
     #?@(:cljs
         [[goog.object :as g]
          [reagent.core :as r]
@@ -81,6 +81,27 @@
     (map (fn [[k v]] [(csk/->kebab-case k) v]) m)))
 
 (comment (map->kebab {:backgroundColor "blue"}))
+
+#?(:cljs
+   (defn css
+     "Delegates to emotion's `jsx` function to apply anonymous styles to an element.
+     `el` - a keyword (will use the name to get the element), a string, or any valid component you can pass to `jsx`.
+     `styles` - a cljs map, styles must reside under the `:css` key.
+
+     (css :div {:css {:background \"red\"} :my-other-prop} \"content\")"
+     ([el props]
+      (let [el (if (keyword? el) (name el))]
+        (jsx el (clj->js (camelize-keys props)))))
+
+     ([el props children]
+      (let [el (if (keyword? el) (name el))]
+        (jsx el (clj->js (camelize-keys props)) (r/as-element children))))
+
+     ([el props first-child & children]
+      (let [el     (if (keyword? el) (name el))
+            children (into [:<> first-child] children)]
+        (jsx el (clj->js (camelize-keys props))
+          (r/as-element children))))))
 
 #?(:cljs
    (defn keyframes [anim-map]

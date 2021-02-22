@@ -3,7 +3,7 @@
     #?@(:cljs [["react" :as react]
                ["@emotion/hash" :as emotion-hash*]
                ["@emotion/styled" :as styled*]
-               ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]
+               ["@emotion/react" :as styled-core :refer [jsx Global ThemeProvider]]
                [goog.object :as g]])
     [clojure.string :as str]
     [clojure.walk :as walk]
@@ -54,6 +54,26 @@
 
            :else v))
        style-map)))
+
+#?(:cljs
+   (defn css
+     "Delegates to emotion's `jsx` function to apply anonymous styles to an element.
+     `el` - a keyword (will use the name to get the element), a string, or any valid component you can pass to `jsx`.
+     `styles` - a cljs map, styles must reside under the `:css` key.
+
+     (css :div {:css {:background \"red\"} :my-other-prop} \"content\")"
+     ([el props]
+      (let [el (if (keyword? el) (name el))]
+        (jsx el (clj->js (camelize-keys props)))))
+
+     ([el props children]
+      (let [el (if (keyword? el) (name el))]
+        (jsx el (clj->js (camelize-keys props)) (force-children children))))
+
+     ([el props first-child & children]
+      (let [el       (if (keyword? el) (name el))
+            children (react/createElement react/Fragment nil (into [first-child] children))]
+        (jsx el (clj->js (camelize-keys props)) (force-children children))))))
 
 #?(:cljs
    (defn keyframes [anim-map]

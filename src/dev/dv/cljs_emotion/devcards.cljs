@@ -5,7 +5,7 @@
     [dv.cljs-emotion.reagent-cards]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
-    [dv.cljs-emotion :refer [defstyled keyframes global-style theme-provider]]))
+    [dv.cljs-emotion :as em :refer [defstyled keyframes global-style theme-provider]]))
 
 (enable-console-print!)
 
@@ -129,14 +129,14 @@ This library delegates to emotion's styled API, while adding a transform layer f
   {:background-color "rebeCCApurple"})
 
 (defcard
-"The main api is defstyled which will return react element factory - a function that accepts props and children.
+  "The main api is defstyled which will return react element factory - a function that accepts props and children.
 
-```clojure
-(defstyled sample1 :div
-  {:background-color \"RebeccaPurple\"})
+  ```clojure
+  (defstyled sample1 :div
+    {:background-color \"RebeccaPurple\"})
 
-(sample1 \"Some text here\")
-```"
+  (sample1 \"Some text here\")
+  ```"
   (sample1 "Some text here"))
 
 (defcard
@@ -176,10 +176,10 @@ I've set this var to true so these classname will show up in the release build o
 (def mw-700 \"@media (min-width:700px)\")
 [:div\n [:.my-thing \"Some content\"]\n  (global-style\n    {:.my-thing {:background \"navy\" :color \"#cce\" mw-700 {:background \"black\"}}})])
 ```"
-(html [:div
-    [:.my-thing "Some content"]
-     (global-style
-      {:.my-thing {:background "navy" :color "#cce" mw-700 {:background "black"}}})]))
+  (html [:div
+         [:.my-thing "Some content"]
+         (global-style
+           {:.my-thing {:background "navy" :color "#cce" mw-700 {:background "black"}}})]))
 
 (def animation
   (keyframes {:from {:background-color "transparent"}
@@ -267,10 +267,10 @@ I've set this var to true so these classname will show up in the release build o
 
 (defstyled multi2 :div
   [{:background "blue"}
-  {:color "yellow"}
-  #js{"borderRadius" 4}
-  [{"border" "1px solid grey"}]
-  (fn [_] {":hover" {:background "white"}})])
+   {:color "yellow"}
+   #js{"borderRadius" 4}
+   [{"border" "1px solid grey"}]
+   (fn [_] {":hover" {:background "white"}})])
 
 (defcard
   "Anywhere an array is passed emotion will merge those styles, so you can also
@@ -414,4 +414,27 @@ I've set this var to true so these classname will show up in the release build o
        (test-theme "Hello there theme"))
      (test-theme "no theme")]))
 
+(defn anon-styles []
+  (em/css :div {:css {:background "lightgrey"}}
+    "Some text on a lightgrey background."))
+
+(dc/defcard-doc
+  "# Anonymous inline styles support.
+   You can use the `css` helper to style a react element inline without needing to create a component."
+  (dc/mkdn-pprint-source anon-styles))
+
+(defcard (anon-styles))
+(defn anon-styles2 []
+  (em/css :div {:css {:background "lightgrey"}}
+    (html [:div {:key 1} "Hello"])
+    (html [:div {:key 2} "Hello2"])
+    (html [:div {:key 3} "Hello3"])))
+
+(dc/defcard-doc
+  "Multiple children are wrapped in a react fragment."
+  (dc/mkdn-pprint-source anon-styles2))
+
+(defcard (anon-styles2))
+
 (defn ^:export main [] (dc/start-devcard-ui!))
+
