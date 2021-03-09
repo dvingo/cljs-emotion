@@ -13,7 +13,7 @@
     [clojure.walk :as walk]
     [clojure.string :as str]
     [com.fulcrologic.guardrails.core :refer [>defn =>]])
-  #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled]])))
+  #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled css2]])))
 
 ;; Support plain cljs compiler and shadow.
 #?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
@@ -83,25 +83,92 @@
 (comment (map->kebab {:backgroundColor "blue"}))
 
 #?(:cljs
+   (defn wrap-css-fn [{css :css :as x}]
+     (js/console.log "wrap: " x)
+     (let [r (cond
+
+               ;; Another emotion styled component created with this lib.
+               (and (meta x) (contains? (meta x) ::hashed-name))
+               (str "." (-> x meta ::hashed-name))
+
+               (fn? css)
+               (do
+                 (.log js/console "FUN: " css)
+                 (fn [arg]
+                   (. js/console log "arg: " arg)
+                   ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+
+                   ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
+                   (js-delete arg "children")
+
+                   (clj->js
+                     ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
+                     (camelize-keys
+                       (css (map->kebab (js->clj arg :keywordize-keys true)))))))
+
+               ;; maps come up in value position for nested selectors
+               (map? x)
+               (clj->js (camelize-keys x))
+               #_(camelize-keys lj x :keywordize-keys true)
+
+               :else x)
+           ]
+       (.log js/console "ret: " r)
+       r
+       ))
+   )
+
+#?(:cljs
+   (defn clj-css [f]
+     (fn [arg]
+       (. js/console log "in clj-css arg: " arg)
+       ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+
+       ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
+       (js-delete arg "children")
+
+       (clj->js
+         ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
+         (camelize-keys
+           (f (map->kebab (js->clj arg :keywordize-keys true)))))))
+   )
+
+#?(:cljs
    (defn css
      "Delegates to emotion's `jsx` function to apply anonymous styles to an element.
      `el` - a keyword (will use the name to get the element), a string, or any valid component you can pass to `jsx`.
      `styles` - a cljs map, styles must reside under the `:css` key.
 
      (css :div {:css {:background \"red\"} :my-other-prop} \"content\")"
+     ;; todo check if no css prop is passed - log warning saying you likely forgot to nest the styles under :css key
      ([el props]
       (let [el (if (keyword? el) (name el))]
-        (jsx el (clj->js (camelize-keys props)))))
+        (jsx el
+          (wrap-css-fn props)
+          #_(clj->js (camelize-keys props)))))
 
      ([el props children]
       (let [el (if (keyword? el) (name el))]
-        (jsx el (clj->js (camelize-keys props)) (r/as-element children))))
+        (jsx el
+          (wrap-css-fn props)
+          #_(clj->js (camelize-keys props)) (r/as-element children))))
 
      ([el props first-child & children]
-      (let [el     (if (keyword? el) (name el))
+      (let [el       (if (keyword? el) (name el))
             children (into [:<> first-child] children)]
-        (jsx el (clj->js (camelize-keys props))
+        (jsx el
+          #_(wrap-css-fn props)
+          (clj->js (camelize-keys props))
           (r/as-element children))))))
+
+
+#?(:clj
+   (defmacro css2 [el props child]
+     `(react/createElement
+        ~el
+        ~props (cljs.core/array ((fn [a#]
+                                   (.log js/console "in macro cb")
+                                   ~child))))))
 
 #?(:cljs
    (defn keyframes [anim-map]

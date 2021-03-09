@@ -167,3 +167,16 @@
     (a-child "third")
     (a-child "fourth")
     (a-child "fifth")))
+
+(defstyled inside-text :span
+  {:color "hsl(200, 40, 69)"})
+
+(defn anon-target []
+  (em/css :div
+    {:css
+     {:color "skyblue"
+      inside-text {:color "grey"}} }
+    (html
+      [:div
+       [:p "outside text"]
+       (inside-text "inside text")])))
