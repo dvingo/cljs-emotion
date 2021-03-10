@@ -3,7 +3,7 @@
     #?@(:cljs [["react" :as react]
                ["@emotion/hash" :as emotion-hash*]
                ["@emotion/styled" :as styled*]
-               ["@emotion/react" :as styled-core :refer [jsx Global ThemeProvider]]])
+               ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]])
     #?@(:cljs
         [[goog.object :as g]
          [reagent.core :as r]
@@ -13,11 +13,12 @@
     [clojure.walk :as walk]
     [clojure.string :as str]
     [com.fulcrologic.guardrails.core :refer [>defn =>]])
-  #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled]])))
+  #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled css]])))
 
 ;; Support plain cljs compiler and shadow.
 #?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
 #?(:cljs (def styled (g/get styled* "default")))
+#?(:cljs (def jsx styled-core/jsx))
 
 #?(:cljs
    (defn relement?
@@ -83,27 +84,6 @@
 (comment (map->kebab {:backgroundColor "blue"}))
 
 #?(:cljs
-   (defn css
-     "Delegates to emotion's `jsx` function to apply anonymous styles to an element.
-     `el` - a keyword (will use the name to get the element), a string, or any valid component you can pass to `jsx`.
-     `styles` - a cljs map, styles must reside under the `:css` key.
-
-     (css :div {:css {:background \"red\"} :my-other-prop} \"content\")"
-     ([el props]
-      (let [el (if (keyword? el) (name el))]
-        (jsx el (clj->js (camelize-keys props)))))
-
-     ([el props children]
-      (let [el (if (keyword? el) (name el))]
-        (jsx el (clj->js (camelize-keys props)) (r/as-element children))))
-
-     ([el props first-child & children]
-      (let [el     (if (keyword? el) (name el))
-            children (into [:<> first-child] children)]
-        (jsx el (clj->js (camelize-keys props))
-          (r/as-element children))))))
-
-#?(:cljs
    (defn keyframes [anim-map]
      (styled-core/keyframes (clj->js (camelize-keys anim-map)))))
 
@@ -119,6 +99,7 @@
 
           (cljs.core/fn? x#)
           (cljs.core/fn [arg#]
+            (js/console.log "IN FN: " arg#)
             ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
 
             ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
@@ -322,3 +303,38 @@
      (apply react/createElement ThemeProvider
        (clj->js props)
        (force-children children))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CSS prop support
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#?(:clj
+   (defn css-body [props]
+     `(do
+        (assert (contains? ~props :css) "Props must contain :css key")
+        (cljs.core/clj->js
+          (assoc ~props :css
+                        (walk/postwalk
+                          ;; todo here you can do props validation also
+                          ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
+                          ~(wrap-call-style-fn)
+                          (:css ~props)))))))
+#?(:clj
+   (defmacro css
+     ([el props]
+      (let [el        (cond-> el (keyword? el) name)
+            css-props (css-body props)]
+        `(jsx ~el ~css-props)))
+
+     ([el props children]
+      (let [el        (cond-> el (keyword? el) name)
+            css-props (css-body props)]
+        `(jsx ~el ~css-props (reagent.core/as-element ~children))))))
+
+(comment
+  (macroexpand-1 '(defstyled n :div {:background-color "blue"}))
+  (macroexpand-1 '(css3 "div"
+                    {:css
+                     [(fn [theme] {:color (:fg theme)})
+                      {:background-color "blue"}]}
+                    "HI")))
