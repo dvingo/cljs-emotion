@@ -3,16 +3,17 @@
     #?@(:cljs [["react" :as react]
                ["@emotion/hash" :as emotion-hash*]
                ["@emotion/styled" :as styled*]
-               ["@emotion/react" :as styled-core :refer [jsx Global ThemeProvider]]
+               ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]
                [goog.object :as g]])
     [clojure.string :as str]
     [clojure.walk :as walk]
     [com.fulcrologic.guardrails.core :refer [>defn =>]])
-  #?(:cljs (:require-macros [dv.cljs-emotion :refer [defstyled]])))
+  #?(:cljs (:require-macros [dv.cljs-emotion :refer [defstyled css]])))
 
 ;; Support plain cljs compiler and shadow.
 #?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
 #?(:cljs (def styled (g/get styled* "default")))
+#?(:cljs (def jsx styled-core/jsx))
 
 ;; from fulcro
 #?(:cljs
@@ -54,26 +55,6 @@
 
            :else v))
        style-map)))
-
-#?(:cljs
-   (defn css
-     "Delegates to emotion's `jsx` function to apply anonymous styles to an element.
-     `el` - a keyword (will use the name to get the element), a string, or any valid component you can pass to `jsx`.
-     `styles` - a cljs map, styles must reside under the `:css` key.
-
-     (css :div {:css {:background \"red\"} :my-other-prop} \"content\")"
-     ([el props]
-      (let [el (if (keyword? el) (name el))]
-        (jsx el (clj->js (camelize-keys props)))))
-
-     ([el props children]
-      (let [el (if (keyword? el) (name el))]
-        (jsx el (clj->js (camelize-keys props)) (force-children children))))
-
-     ([el props first-child & children]
-      (let [el       (if (keyword? el) (name el))
-            children (react/createElement react/Fragment nil (into [first-child] children))]
-        (jsx el (clj->js (camelize-keys props)) (force-children children))))))
 
 #?(:cljs
    (defn keyframes [anim-map]
@@ -362,3 +343,30 @@
      (apply react/createElement ThemeProvider
        (clj->js props)
        (force-children children))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CSS prop support
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#?(:clj
+   (defn css-body [props]
+     `(do
+        (assert (contains? ~props :css) "Props must contain :css key")
+        (cljs.core/clj->js
+          (assoc ~props :css
+                        (walk/postwalk
+                          ;; todo here you can do props validation also
+                          ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
+                          ~(wrap-call-style-fn)
+                          (:css ~props)))))))
+#?(:clj
+   (defmacro css
+     ([el props]
+      (let [el        (cond-> el (keyword? el) name)
+            css-props (css-body props)]
+        `(jsx ~el ~css-props)))
+
+     ([el props children]
+      (let [el        (cond-> el (keyword? el) name)
+            css-props (css-body props)]
+        `(jsx ~el ~css-props ~children)))))

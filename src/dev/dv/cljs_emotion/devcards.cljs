@@ -5,7 +5,7 @@
     [dv.cljs-emotion.reagent-cards]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
-    [dv.cljs-emotion :as em :refer [defstyled keyframes global-style theme-provider]]))
+    [dv.cljs-emotion :as em :refer [css defstyled keyframes global-style theme-provider]]))
 
 (enable-console-print!)
 
@@ -415,7 +415,7 @@ I've set this var to true so these classname will show up in the release build o
      (test-theme "no theme")]))
 
 (defn anon-styles []
-  (em/css :div {:css {:background "lightgrey"}}
+  (css :div {:css {:background "lightgrey"}}
     "Some text on a lightgrey background."))
 
 (dc/defcard-doc
@@ -425,10 +425,12 @@ I've set this var to true so these classname will show up in the release build o
 
 (defcard (anon-styles))
 (defn anon-styles2 []
-  (em/css :div {:css {:background "lightgrey"}}
-    (html [:div {:key 1} "Hello"])
-    (html [:div {:key 2} "Hello2"])
-    (html [:div {:key 3} "Hello3"])))
+  (css :div {:css {:background "lightgrey"}}
+    (html
+      [:div
+       [:div [:div {:key 1} "Hello"]]
+       [:div {:key 2} "Hello2"]
+       [:div {:key 3} "Hello3"]])))
 
 (dc/defcard-doc
   "Multiple children are wrapped in a react fragment."

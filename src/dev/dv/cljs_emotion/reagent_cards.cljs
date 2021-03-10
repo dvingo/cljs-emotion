@@ -231,8 +231,16 @@
   animation-state)
 
 (defn anon-styles []
-  (css :div {:css {:background "lightgrey"}}
-    [:p "Some text on a lightgrey background."]))
+  (r/as-element
+    [:div
+     (css :div {:css {:background "lightgrey"}}
+       [:p "Some text on a lightgrey background."])
+     (theme-provider {:theme {:bg "salmon"}}
+       (css :div {:css
+                  [{:color "white"}
+                   #js{:border "1px solid"}
+                   (fn [t] {:background (or (:bg t) "lightgrey")})]}
+         [:p "Some text on a salmon background."]))]))
 
 (dc/defcard-doc
   "# Anonymous inline styles support.
