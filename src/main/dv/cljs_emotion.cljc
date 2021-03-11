@@ -82,7 +82,6 @@
 #?(:clj
    (defn wrap-call-style-fn []
      `(fn [x#]
-        ;(js/console.log "Wrapping value: " x#)
         (cond
 
           ;; Another emotion styled component created with this lib.
@@ -90,18 +89,15 @@
           (str "." (-> x# meta ::hashed-name))
 
           (cljs.core/fn? x#)
-          (do
-            ; (js/console.log "got function") (js/console.log x#)
+          (cljs.core/fn [arg#]
+            ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
 
-            (cljs.core/fn [arg#]
-              ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+            ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
+            (cljs.core/js-delete arg# "children")
 
-              ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
-              (cljs.core/js-delete arg# "children")
-
-              (cljs.core/clj->js
-                ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
-                (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))))
+            (cljs.core/clj->js
+              ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
+              (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true)))))
 
           ;; maps come up in value position for nested selectors
           (map? x#)

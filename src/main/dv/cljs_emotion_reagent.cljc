@@ -99,7 +99,6 @@
 
           (cljs.core/fn? x#)
           (cljs.core/fn [arg#]
-            (js/console.log "IN FN: " arg#)
             ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
 
             ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
