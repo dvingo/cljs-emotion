@@ -15,6 +15,15 @@
 #?(:cljs (def styled (g/get styled* "default")))
 #?(:cljs (def jsx styled-core/jsx))
 
+;; Used to prevent generated code from needing to require goog.object
+(defn obj-set [o k v]
+  #?(:cljs (g/set o k v)
+     :clj nil))
+
+(defn obj-get [o k]
+  #?(:cljs (g/get o k)
+     :clj nil))
+
 ;; from fulcro
 #?(:cljs
    (defn force-children
@@ -117,8 +126,8 @@
    (defn add-class-name [props class-name]
      (if (object? props)
        (doto props
-         (g/set "className"
-           (->> [class-name (g/get props "className")]
+         (goog.object/set "className"
+           (->> [class-name (goog.object/get props "className")]
              (str/join " ")
              (str/trim))))
        (update props :className #(if (nil? %) class-name (str class-name " " %))))))
@@ -176,15 +185,15 @@
      (cond
        ;; if literals, don't need to determine type at runtime
        ;; a dom element like :div, same as styled.div``
-       (string? tag-name) `(goog.object/get ~styled-arg ~tag-name)
-       (keyword? tag-name) `(goog.object/get ~styled-arg ~(name tag-name))
+       (string? tag-name) `(obj-get ~styled-arg ~tag-name)
+       (keyword? tag-name) `(obj-get ~styled-arg ~(name tag-name))
        :else
        `(cond
           (string? ~tag-name)
-          (goog.object/get ~styled-arg ~tag-name)
+          (obj-get ~styled-arg ~tag-name)
 
           (keyword? ~tag-name)
-          (goog.object/get ~styled-arg ~(name tag-name))
+          (obj-get ~styled-arg ~(name tag-name))
 
           ;; Another styled component
           (::styled (meta ~tag-name))
@@ -236,7 +245,7 @@
                ~children* (cljs.core/clj->js ~children*)
                ~component-type ~(get-type `styled el)
                ~clss (.apply ~component-type ~component-type ~children*)]
-           (goog.object/set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
+           (obj-set ~clss "displayName" ~(str (-> &env :ns :name) "/" component-name))
 
            (def ~component-name
              (with-meta (react-factory ~clss ~class-name)
