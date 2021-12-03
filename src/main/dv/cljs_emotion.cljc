@@ -18,11 +18,11 @@
 ;; Used to prevent generated code from needing to require goog.object
 (defn obj-set [o k v]
   #?(:cljs (g/set o k v)
-     :clj nil))
+     :clj  nil))
 
 (defn obj-get [o k]
   #?(:cljs (g/get o k)
-     :clj nil))
+     :clj  nil))
 
 ;; from fulcro
 #?(:cljs
@@ -48,6 +48,8 @@
              (update 0 str/lower-case)
              str/join))
          prop))))
+
+;; todo use the caching strategy seen in reagent.impl.template
 
 #?(:cljs
    (defn camelize-keys
@@ -85,8 +87,7 @@
         :however item))
     {:background    "lightblue"
      :font-size     20
-     :border-radius "10px"})
-  )
+     :border-radius "10px"}) )
 
 #?(:clj
    (defn wrap-call-style-fn []
@@ -145,6 +146,12 @@
        props)))
 
 #?(:cljs
+   (defn map->obj [m]
+     (reduce-kv (fn [o k v]
+                  (doto o (obj-set (cond-> k (implements? INamed k) name) v)))
+       #js{} m)))
+
+#?(:cljs
    (defn react-factory [el class-name]
      (fn
        ([]
@@ -156,7 +163,9 @@
             (react/createElement el (set-class-name #js{} class-name) props)
 
             (map? props)
-            (let [props (clj->js (set-class-name props class-name))]
+            ;; Do not use clj->js in order to preserve clojure data types like keywords that would not
+            ;; survive a round-trip clj->js js->clj
+            (let [props (map->obj (set-class-name props class-name))]
               (react/createElement el props))
 
             (object? props)

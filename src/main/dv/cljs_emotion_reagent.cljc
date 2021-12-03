@@ -23,11 +23,11 @@
 ;; Used to prevent generated code from needing to require goog.object
 (defn obj-set [o k v]
   #?(:cljs (g/set o k v)
-     :clj nil))
+     :clj  nil))
 
 (defn obj-get [o k]
   #?(:cljs (g/get o k)
-     :clj nil))
+     :clj  nil))
 
 #?(:cljs
    (defn relement?
@@ -154,6 +154,12 @@
        props)))
 
 #?(:cljs
+   (defn map->obj [m]
+     (reduce-kv (fn [o k v]
+                  (doto o (obj-set (cond-> k (implements? INamed k) name) v)))
+       #js{} m)))
+
+#?(:cljs
    (defn massage-props
      "Allows using kebab-case prop names."
      [props class-name]
@@ -161,7 +167,7 @@
            props (cond-> props clss (assoc :class (rutil/class-names clss)))
            ;; converts properties for JS call as expected by react class->className, on-click->onClick etc.
            props (rt/convert-prop-value props)]
-       (clj->js (set-class-name props class-name)))))
+       (set-class-name props class-name))))
 
 #?(:cljs
    (defn react-factory
