@@ -87,7 +87,7 @@
         :however item))
     {:background    "lightblue"
      :font-size     20
-     :border-radius "10px"}) )
+     :border-radius "10px"}))
 
 #?(:clj
    (defn wrap-call-style-fn []
@@ -148,7 +148,10 @@
 #?(:cljs
    (defn map->obj [m]
      (reduce-kv (fn [o k v]
-                  (doto o (obj-set (cond-> k (implements? INamed k) name) v)))
+                  ;; convert keywords to string only in key position
+                  (let [new-k (cond-> k (implements? INamed k) name)
+                        new-v (cond-> v (map? v) map->obj)]
+                    (doto o (obj-set new-k new-v))))
        #js{} m)))
 
 #?(:cljs
