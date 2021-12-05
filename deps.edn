@@ -1,23 +1,23 @@
 {:paths ["src/main" "resources"]
- :deps  {org.clojure/clojure                 {:mvn/version "1.10.1"}
-         com.fulcrologic/guardrails          {:mvn/version "1.1.3"}
-         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.1"}
-         dv/clj-utils                        {:mvn/version "2021-01-08"}}
+ :deps  {org.clojure/clojure                 {:mvn/version "1.10.3"}
+         com.fulcrologic/guardrails          {:mvn/version "1.1.9"}
+         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
+         dv/clj-utils                        {:mvn/version "2021-10-31.0.0"}}
  :aliases
         {:dev     {:extra-paths ["src/dev"]
                    :extra-deps  {devcards/devcards         {:mvn/version "0.2.7"}
-                                 reagent/reagent           {:mvn/version "1.0.0" :exclusions [cljsjs/react]}
-                                 com.fulcrologic/fulcro    {:mvn/version "3.4.16"}
+                                 reagent/reagent           {:mvn/version "1.1.0" :exclusions [cljsjs/react]}
+                                 com.fulcrologic/fulcro    {:mvn/version "3.5.8"}
                                  sablono/sablono           {:mvn/version "0.8.6"}
-                                 binaryage/devtools        {:mvn/version "1.0.2"}
-                                 org.clojure/clojurescript {:mvn/version "1.10.773"}
-                                 thheller/shadow-cljs      {:mvn/version "2.11.18"}}}
+                                 binaryage/devtools        {:mvn/version "1.0.4"}
+                                 org.clojure/clojurescript {:mvn/version "1.10.896"}
+                                 thheller/shadow-cljs      {:mvn/version "2.16.7"}}}
          :test    {:extra-paths ["test"]
-                   :extra-deps  {org.clojure/test.check {:mvn/version "1.0.0"}}}
+                   :extra-deps  {org.clojure/test.check {:mvn/version "1.1.1"}}}
          :runner
                   {:extra-deps {com.cognitect/test-runner
                                 {:git/url "https://github.com/cognitect-labs/test-runner"
-                                 :sha     "f7ef16dc3b8332b0d77bc0274578ad5270fbfedd"}}
+                                 :sha     "dd6da11611eeb87f08780a30ac8ea6012d4c05ce"}}
                    :main-opts  ["-m" "cognitect.test-runner" "-d" "test"]}
 
          :jar     {:replace-deps {seancorfield/depstar {:mvn/version "2.0.165"}}
