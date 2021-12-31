@@ -43,3 +43,5 @@ Deploy it to Clojars -- needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` environm
 ```bash
 make dev
 ```
+
+This starts the shadow-cljs server and watch process for the devcards build.

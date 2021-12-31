@@ -5,16 +5,18 @@
                ["@emotion/styled" :as styled*]
                ["@emotion/react" :as styled-core :refer [Global ThemeProvider]]])
     #?@(:cljs
-        [[goog.object :as g]
-         [reagent.core :as r]
-         [reagent.impl.template :as rt]
-         [reagent.impl.util :as rutil]])
+        [[borkdude.dynaload :refer [dynaload]]
+         [goog.object :as g]])
     [camel-snake-kebab.core :as csk]
     [clojure.walk :as walk]
     [clojure.string :as str]
     [com.fulcrologic.guardrails.core :refer [>defn =>]])
   #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled css]])))
 
+;; This is so consumers of this library don't need to pull in reagent.
+#?(:cljs (def r-as-element (dynaload 'reagent.core/as-element)))
+#?(:cljs (def r-convert-prop-value (dynaload 'reagent.impl.template/convert-prop-value)))
+#?(:cljs (def r-class-names (dynaload 'reagent.impl.util/class-names)))
 ;; Support plain cljs compiler and shadow.
 #?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
 #?(:cljs (def styled (g/get styled* "default")))
@@ -50,7 +52,7 @@
      (if (seq? x)
        (to-array (mapv force-children x))
        (if (relement? x)
-         (r/as-element x)
+         (@r-as-element x)
          x))))
 
 #?(:cljs
@@ -164,9 +166,9 @@
      "Allows using kebab-case prop names."
      [props class-name]
      (let [clss  (:class props)
-           props (cond-> props clss (assoc :class (rutil/class-names clss)))
+           props (cond-> props clss (assoc :class (@r-class-names clss)))
            ;; converts properties for JS call as expected by react class->className, on-click->onClick etc.
-           props (rt/convert-prop-value props)]
+           props (@r-convert-prop-value props)]
        (set-class-name props class-name))))
 
 #?(:cljs
@@ -189,7 +191,7 @@
             (react/createElement el (set-class-name props class-name))
 
             (relement? props)
-            (react/createElement el (set-class-name #js{} class-name) (r/as-element props))
+            (react/createElement el (set-class-name #js{} class-name) (@r-as-element props))
 
             (seq? props)
             (react/createElement el (set-class-name #js{} class-name) (force-children props))

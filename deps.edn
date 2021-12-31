@@ -2,7 +2,7 @@
  :deps  {org.clojure/clojure                 {:mvn/version "1.10.3"}
          com.fulcrologic/guardrails          {:mvn/version "1.1.9"}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
-         dv/clj-utils                        {:mvn/version "2021-10-31.0.0"}}
+         borkdude/dynaload                   {:mvn/version "0.2.2"}}
  :aliases
         {:dev     {:extra-paths ["src/dev"]
                    :extra-deps  {devcards/devcards         {:mvn/version "0.2.7"}
@@ -10,8 +10,9 @@
                                  com.fulcrologic/fulcro    {:mvn/version "3.5.8"}
                                  sablono/sablono           {:mvn/version "0.8.6"}
                                  binaryage/devtools        {:mvn/version "1.0.4"}
-                                 org.clojure/clojurescript {:mvn/version "1.10.896"}
-                                 thheller/shadow-cljs      {:mvn/version "2.16.7"}}}
+                                 dv/clj-utils              {:mvn/version "2021-10-31.0.0"}
+                                 org.clojure/clojurescript {:mvn/version "1.11.4"}
+                                 thheller/shadow-cljs      {:mvn/version "2.16.10"}}}
          :test    {:extra-paths ["test"]
                    :extra-deps  {org.clojure/test.check {:mvn/version "1.1.1"}}}
          :runner

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dv</groupId>
   <artifactId>cljs-emotion</artifactId>
-  <version>2021-12-05.0.0</version>
+  <version>2021-12-31.0.0</version>
   <name>cljs-emotion</name>
   <description>ClojureScript wrapper of emotion css-in-js library</description>
   <url>https://github.com/dvingo/dv.cljs-emotion</url>
@@ -36,14 +36,14 @@
       <version>1.1.9</version>
     </dependency>
     <dependency>
-      <groupId>dv</groupId>
-      <artifactId>clj-utils</artifactId>
-      <version>2021-10-31.0.0</version>
-    </dependency>
-    <dependency>
       <groupId>camel-snake-kebab</groupId>
       <artifactId>camel-snake-kebab</artifactId>
       <version>0.4.2</version>
+    </dependency>
+    <dependency>
+      <groupId>borkdude</groupId>
+      <artifactId>dynaload</artifactId>
+      <version>0.2.2</version>
     </dependency>
   </dependencies>
   <build>
