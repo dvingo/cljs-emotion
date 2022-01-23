@@ -170,13 +170,15 @@
    (defn make-js-props
      "Allows using kebab-case prop names."
      [props class-name]
-     (let [clss      (:class props)
-           props     (cond-> props clss (assoc :class (@r-class-names clss)))
-           ;; converts properties for JS call as expected by react class->className, on-click->onClick etc.
-           clj-props (set-class-name props class-name)
-           js-props  (@r-convert-prop-value props)
-           js-props  (set-class-name js-props class-name)]
-       (doto js-props (obj-set cljs-props-key clj-props)))))
+     (if (object? props)
+       props
+       (let [clss      (:class props)
+             props     (cond-> props clss (assoc :class (@r-class-names clss)))
+             ;; converts properties for JS call as expected by react class->className, on-click->onClick etc.
+             clj-props (set-class-name props class-name)
+             js-props  (@r-convert-prop-value props)
+             js-props  (set-class-name js-props class-name)]
+         (doto js-props (obj-set cljs-props-key clj-props))))))
 
 #?(:cljs
    (defn react-factory

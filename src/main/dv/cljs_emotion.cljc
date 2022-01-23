@@ -144,9 +144,11 @@
 
 #?(:cljs
    (defn make-js-props [props class-name]
-     (let [clj-props (set-class-name props class-name)
-           js-props  (map->obj clj-props)]
-       (doto js-props (obj-set cljs-props-key clj-props)))))
+     (if (object? props)
+       props
+       (let [clj-props (set-class-name props class-name)
+             js-props  (map->obj clj-props)]
+         (doto js-props (obj-set cljs-props-key clj-props))))))
 
 #?(:cljs
    (defn react-factory [el class-name]

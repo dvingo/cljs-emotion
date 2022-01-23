@@ -50,3 +50,7 @@
      [:div "Offline" [switch-case {:status :offline} "Should be grey"]]
      [:div "Away" [switch-case {:status :away} "Should be blue"]]
      [:div "Missing" [switch-case "Should be white"]]]))
+
+(defstyled hover-hand :div {":hover" {:cursor "pointer"}})
+(defcard "Test js-props - hover should show pointer"
+  (dc/reagent [:div [hover-hand #js{:key "login-label"} "Login"] ]))
