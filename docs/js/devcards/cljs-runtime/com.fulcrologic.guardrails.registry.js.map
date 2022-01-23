@@ -1,0 +1,1 @@
+{"version":3,"sources":["com/fulcrologic/guardrails/registry.cljc"],"mappings":"","names":[],"sourcesContent":["(ns com.fulcrologic.guardrails.registry\n  \"for syntactic sugar when creating namespaced keywords\")\n"]}

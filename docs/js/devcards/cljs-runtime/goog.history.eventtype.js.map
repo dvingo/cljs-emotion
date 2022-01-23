@@ -1,0 +1,9 @@
+{
+"version":3,
+"file":"goog.history.eventtype.js",
+"lineCount":3,
+"mappings":"AAWAA,IAAKC,CAAAA,OAAL,CAAa,wBAAb,CAAA;AAOAD,IAAKE,CAAAA,OAAQC,CAAAA,SAAb,GAAyB,CACvBC,SAAU,UADa,CAAzB;;",
+"sources":["goog/history/eventtype.js"],
+"sourcesContent":["/**\n * @license\n * Copyright The Closure Library Authors.\n * SPDX-License-Identifier: Apache-2.0\n */\n\n/**\n * @fileoverview Event types for goog.history.\n */\n\n\ngoog.provide('goog.history.EventType');\n\n\n/**\n * Event types for goog.history.\n * @enum {string}\n */\ngoog.history.EventType = {\n  NAVIGATE: 'navigate'\n};\n"],
+"names":["goog","provide","history","EventType","NAVIGATE"]
+}
