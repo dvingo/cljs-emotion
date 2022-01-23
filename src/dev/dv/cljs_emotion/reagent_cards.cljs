@@ -126,7 +126,7 @@
     {:color  "red"
      a-child {:color (or color "darkorchid")}
      "@media (min-width: 1024px)"
-             {a-child {:color "black"}}}))
+     {a-child {:color "black"}}}))
 
 (defcard-rg a-thing2
   "# Target another defstyled component (continued)
@@ -162,16 +162,16 @@
   (fn [_]
     {:color  "red"
      (str a-child " + " a-child)
-             {:color            "#eee"
-              :background-color "hsl(0, 0%, 48%)"
-              :padding          "1em"
-              :border-top       "1px solid"}
+     {:color            "#eee"
+      :background-color "hsl(0, 0%, 48%)"
+      :padding          "1em"
+      :border-top       "1px solid"}
      a-child {:color            "darkorchid"
               :background-color "paleVIOLETRed"}
      "@media (min-width: 1024px)"
-             {a-child {:color "black"}
-              (str a-child " + " a-child)
-                      {:background-color (lighten 0.2 "hsl(0, 0%, 48%)")}}}))
+     {a-child {:color "black"}
+      (str a-child " + " a-child)
+      {:background-color (lighten 0.2 "hsl(0, 0%, 48%)")}}}))
 
 (dc/defcard-doc
   "# Target another defstyled component in a combinator selector"
@@ -183,11 +183,11 @@
   [:div
    [a-parent3
     \"HELLLO\"
-    (a-child \"first\")
-    (a-child \"second\")
-    (a-child \"third\")
-    (a-child \"fourth\")
-    (a-child \"fifth\")]]
+    [a-child \"first\"]
+    [a-child \"second\"]
+    [a-child \"third\"]
+    [a-child \"fourth\"]
+    [a-child \"fifth\"]]]
  ```")
 
 (defcard
@@ -195,11 +195,11 @@
     [:div
      [a-parent3
       "HELLLO"
-      (a-child "first")
-      (a-child "second")
-      (a-child "third")
-      (a-child "fourth")
-      (a-child "fifth")]]))
+      [a-child "first"]
+      [a-child "second"]
+      [a-child "third"]
+      [a-child "fourth"]
+      [a-child "fifth"]]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Animation
@@ -239,7 +239,9 @@
        (css :div {:css
                   [{:color "white"}
                    #js{:border "1px solid"}
-                   (fn [t] {:background (or (:bg t) "lightgrey")})]}
+                   (fn [t]
+                     (.log js/console "THEME :  " t)
+                     {:background (or (:bg t) "lightgrey")})]}
          [:p "Some text on a salmon background."]))]))
 
 (dc/defcard-doc
@@ -248,3 +250,35 @@
   (dc/mkdn-pprint-source anon-styles))
 
 (defcard (anon-styles))
+
+
+;; Test for nested breakpoints in callback functions.
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+(defstyled full-height :div
+  {:height     "100%"
+   :background "pink"}
+  (fn [props]
+    (.log js/console "PROPS: " props)
+    (:styles props)))
+
+(defn nested-fn []
+  [:div
+   [full-height
+    {:styles {:width "70%" "@media (min-width: 700px)" {:background "skyBLUE" :width "100%"}}}
+    [:p "hello body"]]])
+
+(defcard "Cljs properties should be passed to callbacks untouched." (dc/mkdn-pprint-source full-height))
+
+;(defcard breakpoint-debug (dc/mkdn-pprint-source nested-fn))
+
+;(defcard-rg (nested-fn))
+
+;(defcard-rg
+;  "Testing 1-arity test."
+;  [:div
+;   [full-height
+;    {:styles {":before"
+;              {:content                    "'HELLO'"
+;               "@media (min-width: 700px)" {:content "'LARGE SCREEN'"}}
+;              :width "70%" "@media (min-width: 700px)" {:background "skyBLUE" :width "100%"}}}]])

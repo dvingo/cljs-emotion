@@ -72,7 +72,10 @@
 
 #?(:cljs
    (defn camelize-keys
-     "Also replaces styled components with their css classname is key position."
+     "Takes a clj map and returns that map modified.
+     Postwalk replaces kebab keywords with camel case version as is expected by React.
+
+     Also replaces styled components with their CSS classname when they appear in key position."
      [style-map]
      (walk/postwalk
        (fn [v]
@@ -86,21 +89,15 @@
            :else v))
        style-map)))
 
-(defn map->kebab
-  "Convert all keys in the map to kebab case keywords."
-  [m]
-  (into {}
-    (map (fn [[k v]] [(csk/->kebab-case k) v]) m)))
-
-(comment (map->kebab {:backgroundColor "blue"}))
-
 #?(:cljs
    (defn keyframes [anim-map]
      (styled-core/keyframes (clj->js (camelize-keys anim-map)))))
 
+(def cljs-props-key "dv.cljs-emotion/props")
+
 #?(:clj
    ;; todo rename bc it also camelizes
-   (defn wrap-call-style-fn []
+   (defn wrap-call-style-fn [anon-styles?]
      `(fn [x#]
         (cond
 
@@ -115,9 +112,14 @@
             ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
             (cljs.core/js-delete arg# "children")
 
-            (cljs.core/clj->js
-              ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
-              (camelize-keys (x# (map->kebab (cljs.core/js->clj arg# :keywordize-keys true))))))
+            (if ~anon-styles?
+              ;; with anonymous styles there can be no props - so the theme is passed as the only argument
+              (cljs.core/clj->js (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))
+
+              (let [cljs-args# (assoc (obj-get arg# ~cljs-props-key)
+                                 :theme (cljs.core/js->clj (obj-get arg# "theme") :keywordize-keys true))]
+                ;; invoke the user-supplied function which returns style data - convert whatever they return to js data structures.
+                (cljs.core/clj->js (camelize-keys (x# cljs-args#))))))
 
           ;; maps come up in value position for nested selectors
           (map? x#)
@@ -137,8 +139,8 @@
    (defn add-class-name [props class-name]
      (if (object? props)
        (doto props
-         (goog.object/set "className"
-           (->> [class-name (goog.object/get props "className")]
+         (obj-set "className"
+           (->> [class-name (obj-get props "className")]
              (str/join " ")
              (str/trim))))
        (update props :className #(if (nil? %) class-name (str class-name " " %))))))
@@ -158,18 +160,23 @@
 #?(:cljs
    (defn map->obj [m]
      (reduce-kv (fn [o k v]
-                  (doto o (obj-set (cond-> k (implements? INamed k) name) v)))
+                  ;; convert keywords to string only in key position
+                  (let [new-k (cond-> k (implements? INamed k) name)
+                        new-v (cond-> v (map? v) map->obj)]
+                    (doto o (obj-set new-k new-v))))
        #js{} m)))
 
 #?(:cljs
-   (defn massage-props
+   (defn make-js-props
      "Allows using kebab-case prop names."
      [props class-name]
-     (let [clss  (:class props)
-           props (cond-> props clss (assoc :class (@r-class-names clss)))
+     (let [clss      (:class props)
+           props     (cond-> props clss (assoc :class (@r-class-names clss)))
            ;; converts properties for JS call as expected by react class->className, on-click->onClick etc.
-           props (@r-convert-prop-value props)]
-       (set-class-name props class-name))))
+           clj-props (set-class-name props class-name)
+           js-props  (@r-convert-prop-value props)
+           js-props  (set-class-name js-props class-name)]
+       (doto js-props (obj-set cljs-props-key clj-props)))))
 
 #?(:cljs
    (defn react-factory
@@ -184,7 +191,7 @@
             (react/createElement el (set-class-name #js{} class-name) props)
 
             (map? props)
-            (let [props (massage-props props class-name)]
+            (let [props (make-js-props props class-name)]
               (react/createElement el props))
 
             (object? props)
@@ -206,11 +213,12 @@
             (js/console.error "Error invoking an emotion styled component: " e))))
 
        ([props & children]
+        ;; if props are a mapping type and not a react child
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
-          (let [props (massage-props props class-name)]
+          (let [js-props (make-js-props props class-name)]
             (if (seq children)
-              (apply react/createElement el props (force-children children))
-              (react/createElement el props)))
+              (apply react/createElement el js-props (force-children children))
+              (react/createElement el js-props)))
           (apply react/createElement el (set-class-name #js{} class-name) (force-children (list* props children))))))))
 
 #?(:clj
@@ -272,7 +280,7 @@
                (walk/postwalk
                  ;; todo here you can do props validation also
                  ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
-                 ~(wrap-call-style-fn)
+                 ~(wrap-call-style-fn false)
                  ~(vec children))
                ;; pass js structures to the lib
                ~children* (cljs.core/clj->js ~children*)
@@ -333,7 +341,7 @@
                         (walk/postwalk
                           ;; todo here you can do props validation also
                           ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
-                          ~(wrap-call-style-fn)
+                          ~(wrap-call-style-fn true)
                           (:css ~props)))))))
 #?(:clj
    (defmacro css

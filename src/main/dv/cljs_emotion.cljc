@@ -71,26 +71,10 @@
    (defn keyframes [anim-map]
      (styled-core/keyframes (clj->js (camelize-keys anim-map)))))
 
-(comment
-  (kebab->camel (name :border-radius))
-  (kebab->camel (name :borderRadius))
-
-  (walk/postwalk
-    (fn [item]
-      (println "item: " item " map entyr: " (map-entry? item))
-      (cond
-        (keyword? item)
-        (do
-          (println "found keyword")
-          (keyword (kebab->camel (name item))))
-        (map-entry?)
-        :however item))
-    {:background    "lightblue"
-     :font-size     20
-     :border-radius "10px"}))
+(def cljs-props-key "dv.cljs-emotion/props")
 
 #?(:clj
-   (defn wrap-call-style-fn []
+   (defn wrap-call-style-fn [anon-styles?]
      `(fn [x#]
         (cond
 
@@ -105,9 +89,13 @@
             ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
             (cljs.core/js-delete arg# "children")
 
-            (cljs.core/clj->js
-              ;; pass clj data to the passed fn, invoke it and camelize the keys for emotion js consumption
-              (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true)))))
+            (if ~anon-styles?
+              ;; with anonymous styles there can be no props - so the theme is passed as the only argument
+              (cljs.core/clj->js (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))
+              (let [cljs-args# (assoc (obj-get arg# ~cljs-props-key)
+                                 :theme (cljs.core/js->clj (obj-get arg# "theme") :keywordize-keys true))]
+                ;; invoke the user-supplied function which returns style data - convert whatever they return to js data structures.
+                (cljs.core/clj->js (camelize-keys (x# cljs-args#))))))
 
           ;; maps come up in value position for nested selectors
           (map? x#)
@@ -155,6 +143,12 @@
        #js{} m)))
 
 #?(:cljs
+   (defn make-js-props [props class-name]
+     (let [clj-props (set-class-name props class-name)
+           js-props  (map->obj clj-props)]
+       (doto js-props (obj-set cljs-props-key clj-props)))))
+
+#?(:cljs
    (defn react-factory [el class-name]
      (fn
        ([]
@@ -168,8 +162,7 @@
             (map? props)
             ;; Do not use clj->js in order to preserve clojure data types like keywords that would not
             ;; survive a round-trip clj->js js->clj
-            (let [props (map->obj (set-class-name props class-name))]
-              (react/createElement el props))
+            (react/createElement el (make-js-props props class-name))
 
             (object? props)
             (react/createElement el (set-class-name props class-name))
@@ -184,11 +177,12 @@
             (js/console.error "Error invoking an emotion styled component: " e))))
 
        ([props & children]
+        ;; if props are a mapping type and not a react child
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
-          (let [props (clj->js (set-class-name props class-name))]
+          (let [js-props (make-js-props props class-name)]
             (if (seq children)
-              (apply react/createElement el props (force-children children))
-              (react/createElement el props)))
+              (apply react/createElement el js-props (force-children children))
+              (react/createElement el js-props)))
           (apply react/createElement el (set-class-name #js{} class-name) (force-children (list* props children))))))))
 
 #?(:clj
@@ -246,13 +240,14 @@
             children*       (gensym "children")]
         `(let [~class-name ~(get-cls-name-from-meta (-> &env :ns :name) component-name)
                ~full-class-name ~(str (-> &env :ns :name) "/" component-name)
-               ~children*
 
+               ~children*
                (walk/postwalk
                  ;; todo here you can do props validation also
                  ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
-                 ~(wrap-call-style-fn)
+                 ~(wrap-call-style-fn false)
                  ~(vec children))
+
                ;; pass js structures to the lib
                ~children* (cljs.core/clj->js ~children*)
                ~component-type ~(get-type `styled el)
@@ -319,8 +314,8 @@
     {:background    "lightblue"
      :font-size     20
      "@media(min-width: 200px)"
-                    [{:font-size 33}
-                     {:background-color "purple"}]
+     [{:font-size 33}
+      {:background-color "purple"}]
      :border-radius "10px"}))
 
 #?(:cljs
@@ -374,7 +369,7 @@
                         (walk/postwalk
                           ;; todo here you can do props validation also
                           ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
-                          ~(wrap-call-style-fn)
+                          ~(wrap-call-style-fn true)
                           (:css ~props)))))))
 #?(:clj
    (defmacro css

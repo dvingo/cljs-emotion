@@ -3,6 +3,8 @@
     [devcards.core :as dc :refer (defcard)]
     [dv.cljs-emotion.fulcro-cards]
     [dv.cljs-emotion.reagent-cards]
+    [dv.cljs-emotion.reagent-debug]
+    [dv.cljs-emotion.debug]
     [dv.cljs-emotion.target-styled]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
@@ -415,9 +417,22 @@ I've set this var to true so these classname will show up in the release build o
        (test-theme "Hello there theme"))
      (test-theme "no theme")]))
 
+;(defn anon-styles []
+;  (css :div {:css {:background "lightgrey"}}
+;    "Some text on a lightgrey background."))
+
 (defn anon-styles []
-  (css :div {:css {:background "lightgrey"}}
-    "Some text on a lightgrey background."))
+  (html [:div
+         (css :div {:css {:background "lightgrey"}}
+           (html [:p "Some text on a lightgrey background."]))
+         (theme-provider {:theme {:bg "salmon"}}
+           (css :div {:css
+                      [{:color "white"}
+                       #js{:border "1px solid"}
+                       (fn [t]
+                         (.log js/console "THEME :  " t)
+                         {:background (or (:bg t) "lightgrey")})]}
+             (html [:p "Some text on a salmon background."])))]))
 
 (dc/defcard-doc
   "# Anonymous inline styles support.
