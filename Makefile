@@ -28,3 +28,4 @@ dev:
 # gpoh -f
 gh-pages:
 > yarn shadow-cljs release devcards
+> mv resources/public/js/devcards/devcards.js docs/
