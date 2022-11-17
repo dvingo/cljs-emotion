@@ -2,6 +2,9 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/dv/cljs-emotion.svg)](https://clojars.org/dv/cljs-emotion)
 
+[![cljdoc badge](https://cljdoc.org/badge/dv/cljs-emotion)](https://cljdoc.org/d/dv/cljs-emotion)
+
+
 Documentation and example usage are hosted in devcards here:
 
 https://dvingo.github.io/cljs-emotion/#!/dv.cljs_emotion.devcards
