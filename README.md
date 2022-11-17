@@ -148,6 +148,9 @@ Open the shadow-cljs devtools webpage and then click on the webserver that hosts
 
 Notes for deploy:
 
+- update pom.xml version
+- commit
+
 Build a deployable jar of this library:
 
     clojure -X:jar
@@ -159,3 +162,16 @@ Install it locally:
 Deploy it to Clojars -- needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` environment variables:
 
     clojure -M:deploy
+
+## Publish github pages
+
+See `Makefile`
+
+```bash
+git checkout gh-pages
+git merge master
+make gh-pages
+git add -A
+git commit -m
+git push github HEAD -f
+```
