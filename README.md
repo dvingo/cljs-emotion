@@ -23,9 +23,17 @@ npm install @emotion/react @emotion/styled
 ```
 The main namespaces are:
 
-- `dv.cljs-emotion` - Plain React components/elements `defstyled`, `jsx`, `css`, `global-style`, `theme-provider`, `keyframes`
-- `dv.cljs-emotion-reagent` - Reagent components `defstyled`, `jsx`, `css`, `global-style`, `theme-provider`, `keyframes`
-- `dv.emotion-helix-dom` - DOM elements for use with helix that support the `:css` prop, with the same API as the components in the `helix.dom` namespace.
+- `dv.cljs-emotion` - Plain React components/elements
+
+With API: `defstyled`, `jsx`, `css`, `global-style`, `theme-provider`, `keyframes`
+
+- `dv.cljs-emotion-reagent` - Reagent components
+
+With API: `defstyled`, `jsx`, `css`, `global-style`, `theme-provider`, `keyframes`
+
+- `dv.emotion-helix-dom`
+
+DOM elements for use with helix that support the `:css` prop, with the same API as the components in the `helix.dom` namespace.
 
 ## Use with plain react components
 
