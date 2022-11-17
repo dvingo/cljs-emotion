@@ -150,7 +150,7 @@ Notes for deploy:
 
 Build a deployable jar of this library:
 
-    clojure -M:jar
+    clojure -X:jar
 
 Install it locally:
 
