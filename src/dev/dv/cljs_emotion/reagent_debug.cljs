@@ -2,7 +2,7 @@
   (:require
     [devcards.core :as dc :refer [defcard-rg defcard]]
     ["polished" :as p :refer [darken]]
-    [dv.cljs-emotion-reagent :as em :refer [css defstyled keyframes global-style theme-provider]]))
+    [dv.cljs-emotion-reagent :as em :refer [defstyled keyframes global-style theme-provider]]))
 
 (defstyled full-height :div
   {:height     "100%"

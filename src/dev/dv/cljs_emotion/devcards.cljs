@@ -5,10 +5,11 @@
     [dv.cljs-emotion.reagent-cards]
     [dv.cljs-emotion.reagent-debug]
     [dv.cljs-emotion.debug]
+    [dv.cljs-emotion.helix-cards]
     [dv.cljs-emotion.target-styled]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
-    [dv.cljs-emotion :as em :refer [css defstyled keyframes global-style theme-provider]]))
+    [dv.cljs-emotion :as em :refer [jsx defstyled keyframes global-style theme-provider]]))
 
 (enable-console-print!)
 
@@ -418,15 +419,15 @@ I've set this var to true so these classname will show up in the release build o
      (test-theme "no theme")]))
 
 ;(defn anon-styles []
-;  (css :div {:css {:background "lightgrey"}}
+;  (jsx :div {:css {:background "lightgrey"}}
 ;    "Some text on a lightgrey background."))
 
 (defn anon-styles []
   (html [:div
-         (css :div {:css {:background "lightgrey"}}
+         (jsx :div {:css {:background "lightgrey"}}
            (html [:p "Some text on a lightgrey background."]))
          (theme-provider {:theme {:bg "salmon"}}
-           (css :div {:css
+           (jsx :div {:css
                       [{:color "white"}
                        #js{:border "1px solid"}
                        (fn [t]
@@ -436,12 +437,12 @@ I've set this var to true so these classname will show up in the release build o
 
 (dc/defcard-doc
   "# Anonymous inline styles support.
-   You can use the `css` helper to style a react element inline without needing to create a component."
+   You can use the `jsx` helper to style a react element inline without needing to create a component."
   (dc/mkdn-pprint-source anon-styles))
 
 (defcard (anon-styles))
 (defn anon-styles2 []
-  (css :div {:css {:background "lightgrey"}}
+  (jsx :div {:css {:background "lightgrey"}}
     (html
       [:div
        [:div [:div {:key 1} "Hello"]]
@@ -455,4 +456,3 @@ I've set this var to true so these classname will show up in the release build o
 (defcard (anon-styles2))
 
 (defn ^:export main [] (dc/start-devcard-ui!))
-

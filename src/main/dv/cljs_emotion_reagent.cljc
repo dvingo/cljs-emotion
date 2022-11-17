@@ -9,9 +9,8 @@
          [goog.object :as g]])
     [camel-snake-kebab.core :as csk]
     [clojure.walk :as walk]
-    [clojure.string :as str]
-    [com.fulcrologic.guardrails.core :refer [>defn =>]])
-  #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled css]])))
+    [clojure.string :as str])
+  #?(:cljs (:require-macros [dv.cljs-emotion-reagent :refer [defstyled]])))
 
 ;; This is so consumers of this library don't need to pull in reagent.
 #?(:cljs (def r-as-element (dynaload 'reagent.core/as-element)))
@@ -20,7 +19,7 @@
 ;; Support plain cljs compiler and shadow.
 #?(:cljs (def emotion-hash (g/get emotion-hash* "default")))
 #?(:cljs (def styled (g/get styled* "default")))
-#?(:cljs (def jsx styled-core/jsx))
+#?(:cljs (def jsx* styled-core/jsx))
 
 ;; Used to prevent generated code from needing to require goog.object
 (defn obj-set [o k v]
@@ -56,9 +55,7 @@
          x))))
 
 #?(:cljs
-   (>defn kebab->camel
-     [prop]
-     [string? => string?]
+   (defn kebab->camel [prop]
      (if (str/starts-with? prop ".")
        prop
 
@@ -95,37 +92,35 @@
 
 (def cljs-props-key "dv.cljs-emotion/props")
 
-#?(:clj
-   ;; todo rename bc it also camelizes
+#?(:cljs
    (defn wrap-call-style-fn [anon-styles?]
-     `(fn [x#]
-        (cond
+     (fn [x]
+       (cond
 
-          ;; Another emotion styled component created with this lib.
-          (and (meta x#) (contains? (meta x#) ::hashed-name))
-          (str "." (-> x# meta ::hashed-name))
+         ;; Another emotion styled component created with this lib.
+         (and (meta x) (contains? (meta x) ::hashed-name))
+         (str "." (-> x meta ::hashed-name))
 
-          (cljs.core/fn? x#)
-          (cljs.core/fn [arg#]
-            ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
+         (fn? x)
+         (fn [arg]
+           ;; arg# is js props passed at runtime, we ship it back and forth js -> cljs -> js
 
-            ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
-            (cljs.core/js-delete arg# "children")
+           ;; js->clj is resulting in an infinite recur when children contains another styled component, so we remove it.
+           (js-delete arg "children")
 
-            (if ~anon-styles?
-              ;; with anonymous styles there can be no props - so the theme is passed as the only argument
-              (cljs.core/clj->js (camelize-keys (x# (cljs.core/js->clj arg# :keywordize-keys true))))
+           (if anon-styles?
+             ;; with anonymous styles there can be no props - so the theme is passed as the only argument
+             (clj->js (camelize-keys (x (js->clj arg :keywordize-keys true))))
+             (let [cljs-args (assoc (obj-get arg cljs-props-key)
+                               :theme (js->clj (obj-get arg "theme") :keywordize-keys true))]
+               ;; invoke the user-supplied function which returns style data - convert whatever they return to js data structures.
+               (clj->js (camelize-keys (x cljs-args))))))
 
-              (let [cljs-args# (assoc (obj-get arg# ~cljs-props-key)
-                                 :theme (cljs.core/js->clj (obj-get arg# "theme") :keywordize-keys true))]
-                ;; invoke the user-supplied function which returns style data - convert whatever they return to js data structures.
-                (cljs.core/clj->js (camelize-keys (x# cljs-args#))))))
+         ;; maps come up in value position for nested selectors
+         (map? x)
+         (camelize-keys x)
 
-          ;; maps come up in value position for nested selectors
-          (map? x#)
-          (camelize-keys (cljs.core/js->clj x# :keywordize-keys true))
-
-          :else x#))))
+         :else x))))
 
 #?(:cljs (goog-define ADD_CLASSNAMES "INITIAL"))
 
@@ -185,31 +180,31 @@
      [el class-name]
      (fn
        ([]
-        (react/createElement el (clj->js (set-class-name {} class-name))))
+        (jsx* el (clj->js (set-class-name {} class-name))))
        ([props]
         (try
           (cond
             (or (react/isValidElement props) (string? props))
-            (react/createElement el (set-class-name #js{} class-name) props)
+            (jsx* el (set-class-name #js{} class-name) props)
 
             (map? props)
             (let [props (make-js-props props class-name)]
-              (react/createElement el props))
+              (jsx* el props))
 
             (object? props)
-            (react/createElement el (set-class-name props class-name))
+            (jsx* el (set-class-name props class-name))
 
             (relement? props)
-            (react/createElement el (set-class-name #js{} class-name) (@r-as-element props))
+            (jsx* el (set-class-name #js{} class-name) (@r-as-element props))
 
             (seq? props)
-            (react/createElement el (set-class-name #js{} class-name) (force-children props))
+            (jsx* el (set-class-name #js{} class-name) (force-children props))
 
             (array? props)
-            (react/createElement el (set-class-name #js{} class-name) props)
+            (jsx* el (set-class-name #js{} class-name) props)
 
             :else
-            (react/createElement el (set-class-name #js{} class-name)))
+            (jsx* el (set-class-name #js{} class-name)))
 
           (catch js/Object e
             (js/console.error "Error invoking an emotion styled component: " e))))
@@ -219,9 +214,9 @@
         (if (or (and (object? props) (not (react/isValidElement props))) (map? props))
           (let [js-props (make-js-props props class-name)]
             (if (seq children)
-              (apply react/createElement el js-props (force-children children))
-              (react/createElement el js-props)))
-          (apply react/createElement el (set-class-name #js{} class-name) (force-children (list* props children))))))))
+              (apply jsx* el js-props (force-children children))
+              (jsx* el js-props)))
+          (apply jsx* el (set-class-name #js{} class-name) (force-children (list* props children))))))))
 
 #?(:clj
    (defn get-type
@@ -282,7 +277,7 @@
                (walk/postwalk
                  ;; todo here you can do props validation also
                  ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
-                 ~(wrap-call-style-fn false)
+                 (wrap-call-style-fn false)
                  ~(vec children))
                ;; pass js structures to the lib
                ~children* (cljs.core/clj->js ~children*)
@@ -343,24 +338,20 @@
                         (walk/postwalk
                           ;; todo here you can do props validation also
                           ;; should not allow anything that's not a symbol, map, vector, js-obj, js-array, fn
-                          ~(wrap-call-style-fn true)
+                          (wrap-call-style-fn true)
                           (:css ~props)))))))
 #?(:clj
-   (defmacro css
+   (defmacro jsx
      ([el props]
       (let [el        (cond-> el (keyword? el) name)
             css-props (css-body props)]
-        `(jsx ~el ~css-props)))
+        `(jsx* ~el ~css-props)))
 
      ([el props children]
       (let [el        (cond-> el (keyword? el) name)
             css-props (css-body props)]
-        `(jsx ~el ~css-props (reagent.core/as-element ~children))))))
+        `(jsx* ~el ~css-props (reagent.core/as-element ~children))))))
 
-(comment
-  (macroexpand-1 '(defstyled n :div {:background-color "blue"}))
-  (macroexpand-1 '(css3 "div"
-                    {:css
-                     [(fn [theme] {:color (:fg theme)})
-                      {:background-color "blue"}]}
-                    "HI")))
+#?(:cljs
+   (defn css [& css]
+     (styled-core/css (clj->js (walk/postwalk (wrap-call-style-fn true) css)))))

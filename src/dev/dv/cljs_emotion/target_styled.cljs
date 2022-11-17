@@ -172,7 +172,7 @@
   {:color "hsl(200, 40, 69)"})
 
 (defn anon-target []
-  (em/css :div
+  (em/jsx :div
     {:css
      {:color "skyblue"
       inside-text {:color "grey"}} }
