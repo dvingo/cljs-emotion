@@ -3,7 +3,7 @@
     [devcards.core :as dc :refer (defcard)]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
-    [dv.cljs-emotion :as em :refer [css defstyled keyframes global-style theme-provider]]))
+    [dv.cljs-emotion :as em :refer [defstyled keyframes global-style theme-provider]]))
 
 (defstyled full-height :div
   {:height     "100%"

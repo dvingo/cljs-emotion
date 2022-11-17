@@ -9,7 +9,7 @@
     [com.fulcrologic.fulcro.components :as fc :refer [defsc]]
     [sablono.core :as sab :refer [html]]
     ["polished" :as p :refer [darken]]
-    [dv.cljs-emotion :as em :refer [css defstyled keyframes global-style theme-provider]]))
+    [dv.cljs-emotion :as em :refer [defstyled keyframes global-style theme-provider]]))
 
 (defsc Button [this {:keys [className text] :as props}]
   {:query         [:className :text]

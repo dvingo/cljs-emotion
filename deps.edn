@@ -1,32 +1,31 @@
 {:paths ["src/main" "resources"]
  :deps  {org.clojure/clojure                 {:mvn/version "1.10.3"}
-         com.fulcrologic/guardrails          {:mvn/version "1.1.9"}
-         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
-         borkdude/dynaload                   {:mvn/version "0.2.2"}}
+         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+         borkdude/dynaload                   {:mvn/version "0.3.5"}}
  :aliases
-        {:dev     {:extra-paths ["src/dev"]
-                   :extra-deps  {devcards/devcards         {:mvn/version "0.2.7"}
-                                 reagent/reagent           {:mvn/version "1.1.0" :exclusions [cljsjs/react]}
-                                 com.fulcrologic/fulcro    {:mvn/version "3.5.8"}
-                                 sablono/sablono           {:mvn/version "0.8.6"}
-                                 binaryage/devtools        {:mvn/version "1.0.4"}
-                                 dv/clj-utils              {:mvn/version "2021-10-31.0.0"}
-                                 org.clojure/clojurescript {:mvn/version "1.11.4"}
-                                 thheller/shadow-cljs      {:mvn/version "2.16.10"}}}
-         :test    {:extra-paths ["test"]
-                   :extra-deps  {org.clojure/test.check {:mvn/version "1.1.1"}}}
-         :runner
-                  {:extra-deps {com.cognitect/test-runner
-                                {:git/url "https://github.com/cognitect-labs/test-runner"
-                                 :sha     "dd6da11611eeb87f08780a30ac8ea6012d4c05ce"}}
-                   :main-opts  ["-m" "cognitect.test-runner" "-d" "test"]}
+ {:dev     {:extra-paths ["src/dev"]
+            :extra-deps  {devcards/devcards      {:mvn/version "0.2.7"}
+                          reagent/reagent        {:mvn/version "1.1.1" :exclusions [cljsjs/react]}
+                          com.fulcrologic/fulcro {:mvn/version "3.5.29"}
+                          lilactown/helix        {:mvn/version "0.1.9"}
+                          sablono/sablono        {:mvn/version "0.8.6"}
+                          binaryage/devtools     {:mvn/version "1.0.6"}
+                          dv/clj-utils           {:mvn/version "2021-10-31.0.0"}
+                          thheller/shadow-cljs   {:mvn/version "2.16.10"}}}
+  :test    {:extra-paths ["test"]
+            :extra-deps  {org.clojure/test.check {:mvn/version "1.1.1"}}}
+  :runner
+  {:extra-deps {com.cognitect/test-runner
+                {:git/url "https://github.com/cognitect-labs/test-runner"
+                 :sha     "dd6da11611eeb87f08780a30ac8ea6012d4c05ce"}}
+   :main-opts  ["-m" "cognitect.test-runner" "-d" "test"]}
 
-         :jar     {:replace-deps {seancorfield/depstar {:mvn/version "2.0.165"}}
-                   :exec-fn      hf.depstar/jar
-                   :exec-args    {:jar "dv.cljs-emotion.jar"}}
+  :jar     {:replace-deps {seancorfield/depstar {:mvn/version "2.0.165"}}
+            :exec-fn      hf.depstar/jar
+            :exec-args    {:jar "dv.cljs-emotion.jar"}}
 
-         :install {:extra-deps {deps-deploy/deps-deploy {:mvn/version "0.0.12"}}
-                   :main-opts  ["-m" "deps-deploy.deps-deploy" "install" "dv.cljs-emotion.jar"]}
+  :install {:extra-deps {deps-deploy/deps-deploy {:mvn/version "0.0.12"}}
+            :main-opts  ["-m" "deps-deploy.deps-deploy" "install" "dv.cljs-emotion.jar"]}
 
-         :deploy  {:extra-deps {deps-deploy/deps-deploy {:mvn/version "0.0.12"}}
-                   :main-opts  ["-m" "deps-deploy.deps-deploy" "deploy" "dv.cljs-emotion.jar"]}}}
+  :deploy  {:extra-deps {deps-deploy/deps-deploy {:mvn/version "0.0.12"}}
+            :main-opts  ["-m" "deps-deploy.deps-deploy" "deploy" "dv.cljs-emotion.jar"]}}}
