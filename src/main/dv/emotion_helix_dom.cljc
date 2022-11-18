@@ -153,7 +153,6 @@
     stop
     tspan])
 
-(def hx-dom-props (dynaload 'helix.impl.props/dom-props))
 (def hx-merge-obj (dynaload 'helix.impl.props/merge-obj))
 (def hx-primitive-obj (dynaload 'helix.impl.props/primitive-obj))
 (def hx-set-obj (dynaload 'helix.impl.props/set-obj))
@@ -167,11 +166,11 @@
   ([m] #?(:clj  (if-let [spread-sym (cond
                                       (contains? m '&) '&
                                       (contains? m :&) :&)]
-                  `(hx-merge-obj ~(-dom-props (dissoc m spread-sym) (hx-primitive-obj))
+                  `(@hx-merge-obj ~(-dom-props (dissoc m spread-sym) (@hx-primitive-obj))
                      (-dom-props ~(get m spread-sym)))
-                  (-dom-props m (hx-primitive-obj)))
+                  (-dom-props m (@hx-primitive-obj)))
           :cljs (if (map? m)
-                  (-dom-props m (hx-primitive-obj))
+                  (-dom-props m (@hx-primitive-obj))
                   ;; assume JS obj
                   m)))
   ([m o]
@@ -181,12 +180,12 @@
              k     (key entry)
              v     (val entry)]
          (case k
-           :css (hx-set-obj o "css" #?(:clj `(dv.em/convert-css ~v) :cljs (dv.em/convert-css v)))
-           :class (hx-set-obj o "className" (hx-normalize-class v))
-           :for (hx-set-obj o "htmlFor" v)
-           :style (hx-set-obj o "style" (hx-dom-style v))
-           :value (hx-set-obj o "value" #?(:clj `(hx-or-undefined ~v) :cljs (hx-or-undefined v)))
-           (hx-set-obj o (hx-camel-case (hx-kw->str k)) v))))
+           :css (@hx-set-obj o "css" #?(:clj `(dv.em/convert-css ~v) :cljs (dv.em/convert-css v)))
+           :class (@hx-set-obj o "className" (@hx-normalize-class v))
+           :for (@hx-set-obj o "htmlFor" v)
+           :style (@hx-set-obj o "style" (@hx-dom-style v))
+           :value (@hx-set-obj o "value" #?(:clj `(@hx-or-undefined ~v) :cljs (@hx-or-undefined v)))
+           (@hx-set-obj o (@hx-camel-case (@hx-kw->str k)) v))))
      #?(:clj  (list* o)
         :cljs o))))
 
@@ -203,14 +202,7 @@
   Use the special & or :& prop to merge dynamic props in."
   [type & args]
   (if (map? (first args))
-    (let [props           (first args)
-          convert-styles? (or (contains? props :css)
-                            (contains? props :&)
-                            (contains? props '&))]
-      `^js/React.Element
-      (jsx ~type
-        ~(if convert-styles? `(dom-props ~props) `(hx-dom-props ~props))
-        ~@(rest args)))
+    `^js/React.Element (jsx ~type (dom-props ~(first args)) ~@(rest args))
     `^js/React.Element (jsx ~type nil ~@args)))
 
 #?(:clj (defn gen-tag [tag] `(defmacro ~tag [& args#] `($d ~(str '~tag) ~@args#))))

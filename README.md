@@ -2,6 +2,9 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/dv/cljs-emotion.svg)](https://clojars.org/dv/cljs-emotion)
 
+[![cljdoc badge](https://cljdoc.org/badge/dv/cljs-emotion)](https://cljdoc.org/d/dv/cljs-emotion)
+
+
 Documentation and example usage are hosted in devcards here:
 
 https://dvingo.github.io/cljs-emotion/#!/dv.cljs_emotion.devcards
@@ -23,9 +26,17 @@ npm install @emotion/react @emotion/styled
 ```
 The main namespaces are:
 
-- `dv.cljs-emotion` - Plain React components/elements `defstyled`, `jsx`, `css`, `global-style`, `theme-provider`, `keyframes`
-- `dv.cljs-emotion-reagent` - Reagent components `defstyled`, `jsx`, `css`, `global-style`, `theme-provider`, `keyframes`
-- `dv.emotion-helix-dom` - DOM elements for use with helix that support the `:css` prop, with the same API as the components in the `helix.dom` namespace.
+`dv.cljs-emotion` - Plain React components/elements
+
+With API: `defstyled`, `jsx`, `css`, `global-style`, `theme-provider`, `keyframes`
+
+`dv.cljs-emotion-reagent` - Reagent components
+
+With API: `defstyled`, `jsx`, `css`, `global-style`, `theme-provider`, `keyframes`
+
+`dv.emotion-helix-dom`
+
+DOM elements for use with helix that support the `:css` prop, with the same API as the components in the `helix.dom` namespace.
 
 ## Use with plain react components
 
@@ -148,6 +159,9 @@ Open the shadow-cljs devtools webpage and then click on the webserver that hosts
 
 Notes for deploy:
 
+- update pom.xml version
+- commit
+
 Build a deployable jar of this library:
 
     clojure -X:jar
@@ -159,3 +173,16 @@ Install it locally:
 Deploy it to Clojars -- needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` environment variables:
 
     clojure -M:deploy
+
+## Publish github pages
+
+See `Makefile`
+
+```bash
+git checkout gh-pages
+git merge master
+make gh-pages
+git add -A
+git commit -m
+git push github HEAD -f
+```
