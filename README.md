@@ -120,7 +120,7 @@ There is a separate namespace for reagent support:
 
 [:div
  [a-parent2 "parent should be red"]
- (jsx {:css (em/css black-bg) {:color "white"}})
+ (jsx {:css (em/css black-bg {:color "white"})})
  [a-parent2 {:color "steelblue"}
   [a-child "nested child should be darkorchid"]]]
 ```
