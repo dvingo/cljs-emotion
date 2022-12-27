@@ -1,0 +1,3 @@
+{:lint-as
+ {dv.cljs-emotion/defstyled         clojure.core/def
+  dv.cljs-emotion-reagent/defstyled clojure.core/def}}
