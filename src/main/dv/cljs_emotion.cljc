@@ -356,7 +356,7 @@
        (apply react/createElement ThemeProvider
          (clj->js props)
          (force-children children))
-       (react/createElement react/Fragment #js{:children children}))))
+       (react/Children.map children (fn [c i] (react/cloneElement c #js{:key i}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CSS prop support
