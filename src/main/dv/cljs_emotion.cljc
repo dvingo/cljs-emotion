@@ -17,11 +17,11 @@
 ;; Used to prevent generated code from needing to require goog.object
 (defn obj-set [o k v]
   #?(:cljs (g/set o k v)
-     :clj  nil))
+     :clj nil))
 
 (defn obj-get [o k]
   #?(:cljs (g/get o k)
-     :clj  nil))
+     :clj nil))
 
 ;; from fulcro
 #?(:cljs
@@ -174,7 +174,7 @@
             (jsx* el (set-class-name #js{} class-name)))
 
           (catch js/Object e
-            (js/console.error "Error invoking an emotion styled component: " e))))
+                 (js/console.error "Error invoking an emotion styled component: " e))))
 
        ([props & children]
         ;; if props are a mapping type and not a react child
@@ -315,9 +315,6 @@
       {:background-color "purple"}]
      :border-radius "10px"}))
 
-#?(:cljs
-   (def ^:private global* (react-factory Global nil)))
-
 ;; emotion doesn't allow functions in nested position, only
 ;; objects and arrays of objects
 ;; but they do allow one function as a child
@@ -326,10 +323,13 @@
 
 #?(:cljs
    (defn global-style
-     "Takes a cljs vector or hashmap of styles and converts to JS types before calling emotion's Global function.
-     Inserts styles into the DOM that target global elements and classes."
+     "Takes a cljs vector or hashmap of styles and converts to JS types before calling emotion's Global function
+     from the @emotion/react package.
+     Inserts styles into the DOM that target global elements and classes.
+
+     https://emotion.sh/docs/@emotion/react"
      [props]
-     (global* {:styles (camelize-keys props)})))
+     (react/createElement Global #js{:styles (clj->js (camelize-keys props))})))
 
 ;; can use like so:
 (comment
@@ -351,11 +351,12 @@
      "Takes a hashmap of a style theme and react children to render with that theme in the React Context
      using emotion's ThemeProvider."
      [props & children]
-     (when-not (contains? props :theme)
-       (throw (js/Error. "You must pass a :theme to the theme-provider.")))
-     (apply react/createElement ThemeProvider
-       (clj->js props)
-       (force-children children))))
+     (when-not (contains? props :theme) (throw (js/Error. "You must pass a :theme to the theme-provider.")))
+     (if (:theme props)
+       (apply react/createElement ThemeProvider
+         (clj->js props)
+         (force-children children))
+       (react/createElement react/Fragment #js{:children children}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CSS prop support
