@@ -6,7 +6,7 @@
     #?(:cljs ["@emotion/react" :as em.react])
     [borkdude.dynaload :refer [dynaload]]
     [clojure.walk :as walk]
-    [dv.cljs-emotion :as dv.em]))
+    [dv.emotion-css :as dv.em]))
 
 #?(:cljs (def jsx em.react/jsx))
 
