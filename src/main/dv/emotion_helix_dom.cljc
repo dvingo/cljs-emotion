@@ -9,6 +9,7 @@
     [dv.emotion-css :as dv.em]))
 
 #?(:cljs (def jsx em.react/jsx))
+#?(:cljs (def css dv.em/css))
 
 (declare
   input textarea option select a abbr address area article aside audio b base bdi
