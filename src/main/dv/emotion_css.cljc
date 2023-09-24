@@ -305,5 +305,8 @@
      (clj->js (walk/postwalk (wrap-call-style-fn true) css))))
 
 #?(:cljs
-   (defn css [& css]
-     (styled-core/css (clj->js (walk/postwalk (wrap-call-style-fn true) css)))))
+   (defn css [css]
+     (styled-core/css
+       (if (object? css)
+         css
+         (clj->js (walk/postwalk (wrap-call-style-fn true) css))))))
