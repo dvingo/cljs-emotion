@@ -5,6 +5,7 @@
   (:require
     #?(:cljs ["@emotion/react" :as em.react])
     [borkdude.dynaload :refer [dynaload]]
+    [clojure.string :as str]
     [clojure.walk :as walk]
     [dv.emotion-css :as dv.em]))
 
@@ -191,10 +192,14 @@
          (case k
            ;; https://emotion.sh/docs/@emotion/babel-plugin#autolabel
            ;; okay this is working but need to pass the actual theme here
+
+           ;; this isn't working I think due to invoking the function first - the hash that is output here is different
+           ;; from what emotion injects in the stylesheet in the document head.
+           ;;
            :css (@hx-set-obj o "css" #?(:clj `(em-css
                                                 (let [out# (dv.em/convert-css ~v)]
                                                   (println "CSS OUT! :  " out#)
-                                                  (if (fn? out#) (out# {:theme :here}))) ~(str "label:" fn-scope ";")) :cljs (em-css
+                                                  (if (fn? out#) (out# {:background "purple"}))) ~(str "label:" fn-scope ";")) :cljs (em-css
                                                                                               (let [out (cljs.core/array (dv.em/convert-css v))]
                                                                                                 (println "CSS OUTPUT: " out)
                                                                                                 ;(cljs.core/array (dv.em/convert-css v))
@@ -228,7 +233,11 @@
 
 #?(:clj (defn gen-tag [tag] `(defmacro ~tag [& args#] `($d
                                                          ;; okay this works!
-                                                         ~(str *ns* "/" (:name (first (:fn-scope ~'&env))))
+                                                         ~(str/replace (str/replace (str *ns* "/" (:name (first (:fn-scope ~'&env))))
+                                                                         "."
+                                                                         "-"
+                                                                         )
+                                                             "/" "$")
                                                          ;; next is to add  the ns/
 
                                                          ~(str '~tag) ~@args#))))
