@@ -9,6 +9,7 @@
     [dv.emotion-css :as dv.em]))
 
 #?(:cljs (def jsx em.react/jsx))
+#?(:cljs (def em-css em.react/css))
 #?(:cljs (def css dv.em/css))
 
 (declare
@@ -164,33 +165,50 @@
 (def hx-dom-style (dynaload 'helix.impl.props/dom-style))
 
 (defn -dom-props
-  ([m] #?(:clj  (if-let [spread-sym (cond
-                                      (contains? m '&) '&
-                                      (contains? m :&) :&)]
-                  `(@hx-merge-obj ~(-dom-props (dissoc m spread-sym) (@hx-primitive-obj))
-                     (-dom-props ~(get m spread-sym)))
-                  (-dom-props m (@hx-primitive-obj)))
-          :cljs (if (map? m)
-                  (-dom-props m (@hx-primitive-obj))
-                  ;; assume JS obj
-                  m)))
-  ([m o]
+  ([fn-scope m] #?(:clj (if-let [spread-sym (cond
+                                              (contains? m '&) '&
+                                              (contains? m :&) :&)]
+                          (do
+                            ;(println "DOM PROPS env: " (keys env))
+                            (println "-dom-props env: " (type fn-scope))
+                            ;;  (println "DOM PROPS env ctx: " (:name (first (:fn-scope env))))
+                            ;;  (println "DOM PROPS env ctx: " (keys fn-scope))
+                            ;;  (println "DOM PROPS env ctx: " (:name  fn-scope))
+                            ;(println "DOM PROPS form " form)
+                            `(@hx-merge-obj ~(-dom-props fn-scope (dissoc m spread-sym) (@hx-primitive-obj))
+                               (-dom-props ~fn-scope ~(get m spread-sym))))
+                          (-dom-props fn-scope m (@hx-primitive-obj)))
+                   :cljs (if (map? m)
+                           (-dom-props fn-scope m (@hx-primitive-obj))
+                           ;; assume JS obj
+                           m)))
+  ([fn-scope m o]
    (if (seq m)
-     (recur (rest m)
+     (recur fn-scope (rest m)
        (let [entry (first m)
              k     (key entry)
              v     (val entry)]
          (case k
-           :css (@hx-set-obj o "css" #?(:clj `(dv.em/convert-css ~v) :cljs (dv.em/convert-css v)))
+           ;; https://emotion.sh/docs/@emotion/babel-plugin#autolabel
+           ;; okay this is working but need to pass the actual theme here
+           :css (@hx-set-obj o "css" #?(:clj `(em-css
+                                                (let [out# (dv.em/convert-css ~v)]
+                                                  (println "CSS OUT! :  " out#)
+                                                  (if (fn? out#) (out# {:theme :here}))) ~(str "label:" fn-scope ";")) :cljs (em-css
+                                                                                              (let [out (cljs.core/array (dv.em/convert-css v))]
+                                                                                                (println "CSS OUTPUT: " out)
+                                                                                                ;(cljs.core/array (dv.em/convert-css v))
+                                                                                                out
+                                                                                                ) (str "label:" fn-scope ";"))))
            :class (@hx-set-obj o "className" (@hx-normalize-class v))
            :for (@hx-set-obj o "htmlFor" v)
            :style (@hx-set-obj o "style" (@hx-dom-style v))
            :value (@hx-set-obj o "value" #?(:clj `(@hx-or-undefined ~v) :cljs (@hx-or-undefined v)))
            (@hx-set-obj o (@hx-camel-case (@hx-kw->str k)) v))))
-     #?(:clj  (list* o)
+     #?(:clj (list* o)
         :cljs o))))
 
-(defmacro dom-props [m] (-dom-props m))
+(defmacro dom-props [fn-scope m] (-dom-props fn-scope m))
 
 (defmacro $d
   "Creates a new React DOM element. \"type\" ought to be a string like \"span\",
@@ -201,11 +219,18 @@
   camelCase and other transformations.
 
   Use the special & or :& prop to merge dynamic props in."
-  [type & args]
+  [fn-scope type & args]
+  ;; (println "fn scope: " (:name fn-scope))
+  (println "fn scope: " fn-scope)
   (if (map? (first args))
-    `^js/React.Element (jsx ~type (dom-props ~(first args)) ~@(rest args))
+    `^js/React.Element (jsx ~type (dom-props ~fn-scope ~(first args)) ~@(rest args))
     `^js/React.Element (jsx ~type nil ~@args)))
 
-#?(:clj (defn gen-tag [tag] `(defmacro ~tag [& args#] `($d ~(str '~tag) ~@args#))))
+#?(:clj (defn gen-tag [tag] `(defmacro ~tag [& args#] `($d
+                                                         ;; okay this works!
+                                                         ~(str *ns* "/" (:name (first (:fn-scope ~'&env))))
+                                                         ;; next is to add  the ns/
+
+                                                         ~(str '~tag) ~@args#))))
 #?(:clj (defmacro gen-tags [] `(do ~@(for [tag tags] (gen-tag tag)))))
 #?(:clj (gen-tags))
